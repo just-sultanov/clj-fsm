@@ -24,4 +24,4 @@
                       :nop?             false
                       :lcov?            false
                       :coveralls?       false
-                      :codecov?         false}}
+                      :codecov?         true}}

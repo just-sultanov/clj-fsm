@@ -16,11 +16,13 @@
            :test-cljs {:extra-deps  {olical/cljs-test-runner {:mvn/version "3.7.0"}}
                        :extra-paths ["test"]
                        :main-opts   ["--main" "cljs-test-runner.main"
-                                     "--out" "target"]}
+                                     "--out" "target/test-cljs"]}
 
            :build     {:extra-deps {cambada {:mvn/version "1.0.7"}}
                        :main-opts  ["--main" "cambada.jar"
-                                    "--app-artifact-id" "clj-fsm"]}
+                                    "--app-group-id" "clj-fsm"
+                                    "--app-artifact-id" "clj-fsm"
+                                    "--aot" "none"]}
 
            :version   {:extra-deps {com.workframe/garamond {:mvn/version "0.4.0"}}
                        :main-opts  ["-m" "garamond.main"]}

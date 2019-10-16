@@ -18,7 +18,7 @@ clean: ## Clean
 	@echo -e "\n"
 
 
-test-clj: clean ## Run clj tests
+test-clj: ## Run Clojure tests
 	@echo "=================================================================="
 	@echo "Run Clojure tests..."
 	@echo "=================================================================="
@@ -26,7 +26,7 @@ test-clj: clean ## Run clj tests
 	@echo -e "\n"
 
 
-test-cljs: clean ## Run cljs tests
+test-cljs: ## Run ClojureScript tests
 	@echo "=================================================================="
 	@echo "Run ClojureScript tests..."
 	@echo "=================================================================="
@@ -37,8 +37,7 @@ test-cljs: clean ## Run cljs tests
 test: test-clj test-cljs ### Run all tests
 
 
-
-build: clean test ## Build jar
+build: ## Build jar
 	@echo "=================================================================="
 	@echo "Build..."
 	@echo "=================================================================="
@@ -64,7 +63,7 @@ major: ## Increment major version
 	clojure -A:version major --tag --message ${TAG_MSG}
 
 
-deploy: build ## Deploy to clojars
+deploy: ## Deploy to clojars
 	@echo "=================================================================="
 	@echo "Deploy..."
 	@echo "=================================================================="
