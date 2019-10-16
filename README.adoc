@@ -1,8 +1,8 @@
-image:https://img.shields.io/clojars/v/clj-fsm/clj-fsm.svg[Clojars]
-image:https://github.com/just-sultanov/clj-fsm/workflows/tests/badge.svg[Tests]
-image:https://github.com/just-sultanov/clj-fsm/workflows/deploy/badge.svg[Deploy]
-image:https://codecov.io/gh/just-sultanov/clj-fsm/branch/master/graph/badge.svg[Codecov,link=https://codecov.io/gh/just-sultanov/clj-fsm]
 image:https://img.shields.io/github/license/mashape/apistatus.svg[License,link=LICENSE]
+image:https://codecov.io/gh/just-sultanov/clj-fsm/branch/master/graph/badge.svg[Codecov,link=https://codecov.io/gh/just-sultanov/clj-fsm]
+image:https://github.com/just-sultanov/clj-fsm/workflows/tests/badge.svg[Tests]
+image:https://github.com/just-sultanov/clj-fsm/workflows/clojars/badge.svg[Deploy]
+image:https://img.shields.io/clojars/v/clj-fsm/clj-fsm.svg[Clojars]
 
 == clj-fsm [experimental]
 
