@@ -17,12 +17,10 @@
 
 
 (deftest ^:unit assign-test
-  (let [key ::sut/fsm
-        fsm (gen/generate (s/gen key))]
-
+  (let [fsm (gen/generate (s/gen ::sut/fsm))]
     (doseq [obj objects]
       (testing (helpers/format "should be valid - assign `fsm` to `%s` metadata" (type obj))
-        (is (= fsm (get (meta (sut/assign obj fsm)) key)))))
+        (is (= fsm (get (meta (sut/assign obj fsm)) sut/meta-fsm-key)))))
 
 
     (doseq [obj invalid-objects]
@@ -32,20 +30,16 @@
 
 
 (deftest ^:unit unassign-test
-  (let [key ::sut/fsm
-        fsm (gen/generate (s/gen key))]
-
+  (let [fsm (gen/generate (s/gen ::sut/fsm))]
     (doseq [obj objects
             :let [o (sut/assign obj fsm)]]
       (testing (helpers/format "should be valid - unassign `fsm` from `%s` metadata" (type obj))
-        (is (nil? (get (meta (sut/unassign o)) key)))))))
+        (is (nil? (get (meta (sut/unassign o)) sut/meta-fsm-key)))))))
 
 
 
 (deftest ^:unit get-fsm-test
-  (let [key ::sut/fsm
-        fsm (gen/generate (s/gen key))]
-
+  (let [fsm (gen/generate (s/gen ::sut/fsm))]
     (doseq [obj objects
             :let [o (sut/assign obj fsm)]]
       (testing (helpers/format "should be valid - get `fsm` from `%s` metadata" (type obj))
@@ -55,12 +49,32 @@
 
 
 (deftest ^:unit get-fsm-name-test
-  (let [key      ::sut/fsm
-        fsm      (gen/generate (s/gen key))
+  (let [fsm      (gen/generate (s/gen ::sut/fsm))
         fsm-name (::sut/name fsm)]
-
     (doseq [obj objects
             :let [o (sut/assign obj fsm)]]
       (testing (helpers/format "should be valid - get `fsm` name from `%s` metadata" (type obj))
         (is (nil? (sut/get-fsm-name obj)))
         (is (= fsm-name (sut/get-fsm-name o)))))))
+
+
+
+(deftest ^:unit get-fsm-desc-test
+  (let [fsm      (gen/generate (s/gen ::sut/fsm))
+        fsm-desc (::sut/desc fsm)]
+    (doseq [obj objects
+            :let [o (sut/assign obj fsm)]]
+      (testing (helpers/format "should be valid - get `fsm` desc from `%s` metadata" (type obj))
+        (is (nil? (sut/get-fsm-desc obj)))
+        (is (= fsm-desc (sut/get-fsm-desc o)))))))
+
+
+
+(deftest ^:unit get-fsm-states-test
+  (let [fsm        (gen/generate (s/gen ::sut/fsm))
+        fsm-states (::sut/states fsm)]
+    (doseq [obj objects
+            :let [o (sut/assign obj fsm)]]
+      (testing (helpers/format "should be valid - get `fsm` states from `%s` metadata" (type obj))
+        (is (nil? (sut/get-fsm-states obj)))
+        (is (= fsm-states (sut/get-fsm-states o)))))))
