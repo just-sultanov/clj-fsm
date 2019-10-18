@@ -12,15 +12,8 @@
 (s/def ::name qualified-keyword?)
 (s/def ::desc string?)
 
-(s/def ::state
-  (s/keys :req [::fsm.state/desc]
-          :opt [::fsm.state/initial?]))
-
-(s/def ::states
-  (s/map-of ::fsm.state/name ::state))
-
 (s/def ::fsm
-  (s/keys :req [::name ::desc ::states]))
+  (s/keys :req [::name ::desc ::fsm.state/states]))
 
 
 
