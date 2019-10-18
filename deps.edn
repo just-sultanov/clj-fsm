@@ -3,11 +3,14 @@
  :deps    {org.clojure/clojure       {:mvn/version "1.10.1"}
            org.clojure/clojurescript {:mvn/version "1.10.520"}}
 
- :aliases {:repl      {:extra-deps {nrepl            {:mvn/version "0.6.0"}
-                                    cider/piggieback {:mvn/version "0.4.2"}}
-                       :main-opts  ["--main" "nrepl.cmdline"
-                                    "--port" "7888"
-                                    "--middleware" "[cider.piggieback/wrap-cljs-repl]"]}
+ :aliases {:common    {:extra-deps {org.clojure/test.check {:mvn/version "0.10.0"}}}
+
+           :repl      {:extra-deps  {nrepl            {:mvn/version "0.6.0"}
+                                     cider/piggieback {:mvn/version "0.4.2"}}
+                       :extra-paths ["dev/src" "example/src"]
+                       :main-opts   ["--main" "nrepl.cmdline"
+                                     "--port" "7888"
+                                     "--middleware" "[cider.piggieback/wrap-cljs-repl]"]}
 
            :test-clj  {:extra-deps  {lambdaisland/kaocha           {:mvn/version "0.0-554"}
                                      lambdaisland/kaocha-cloverage {:mvn/version "0.0-32"}}
