@@ -10,6 +10,10 @@ help: ## Show help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 
+repl: ## Run nREPL
+	clj -R:common:test-clj:test-cljs -A:repl
+
+
 clean: ## Clean
 	@echo "=================================================================="
 	@echo "Clean..."
