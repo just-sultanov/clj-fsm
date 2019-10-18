@@ -1,6 +1,6 @@
 image:https://img.shields.io/github/license/mashape/apistatus.svg[License,link=LICENSE]
 image:https://codecov.io/gh/just-sultanov/clj-fsm/branch/master/graph/badge.svg[Codecov,link=https://codecov.io/gh/just-sultanov/clj-fsm]
-image:https://github.com/just-sultanov/clj-fsm/workflows/ci/badge.svg[Build]
+image:https://github.com/just-sultanov/clj-fsm/workflows/build/badge.svg[Build]
 image:https://img.shields.io/clojars/v/clj-fsm.svg[Clojars, link=https://clojars.org/clj-fsm]
 
 == clj-fsm
