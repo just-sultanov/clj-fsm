@@ -49,7 +49,7 @@
 
 
 (defn get-fsm-states [data]
-  (::states (get-fsm data)))
+  (::fsm.state/states (get-fsm data)))
 
 
 (defn get-fsm-initial-state [data]
