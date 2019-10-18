@@ -63,6 +63,13 @@
     first))
 
 
+(defn get-fsm-state [data state-name]
+  (some-> data
+    get-fsm-states
+    (get state-name)))
+
+
+
 ;;
 ;; Protocols
 ;;
@@ -77,7 +84,8 @@
   (-get-fsm-desc [data])
   (-get-fsm-states [data])
   (-get-fsm-states-names [data])
-  (-get-fsm-initial-state [data]))
+  (-get-fsm-initial-state [data])
+  (-get-fsm-state [data state-name]))
 
 
 
@@ -106,7 +114,10 @@
        (get-fsm-states-names data))
 
      (-get-fsm-initial-state [data]
-       (get-fsm-initial-state data)))
+       (get-fsm-initial-state data))
+
+     (-get-fsm-state [data state-name]
+       (get-fsm-state data state-name)))
 
    :cljs
    (extend-protocol IFSM
@@ -133,4 +144,7 @@
        (get-fsm-states-names data))
 
      (-get-fsm-initial-state [data]
-       (get-fsm-initial-state data))))
+       (get-fsm-initial-state data))
+
+     (-get-fsm-state [data state-name]
+       (get-fsm-state data state-name))))
