@@ -52,6 +52,10 @@
   (::fsm.state/states (get-fsm data)))
 
 
+(defn get-fsm-states-names [data]
+  (keys (get-fsm-states data)))
+
+
 (defn get-fsm-initial-state [data]
   (some->> data
     get-fsm-states
@@ -72,6 +76,7 @@
   (-get-fsm-name [data])
   (-get-fsm-desc [data])
   (-get-fsm-states [data])
+  (-get-fsm-states-names [data])
   (-get-fsm-initial-state [data]))
 
 
@@ -97,6 +102,9 @@
      (-get-fsm-states [data]
        (get-fsm-states data))
 
+     (-get-fsm-states-names [data]
+       (get-fsm-states-names data))
+
      (-get-fsm-initial-state [data]
        (get-fsm-initial-state data)))
 
@@ -120,6 +128,9 @@
 
      (-get-fsm-states [data]
        (get-fsm-states data))
+
+     (-get-fsm-states-names [data]
+       (get-fsm-states-names data))
 
      (-get-fsm-initial-state [data]
        (get-fsm-initial-state data))))

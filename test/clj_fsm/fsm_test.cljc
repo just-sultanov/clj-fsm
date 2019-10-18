@@ -88,6 +88,18 @@
 
 
 
+(deftest ^:unit get-fsm-states-names-test
+  (testing "getting `fsm` states names:"
+    (let [fsm        (gen/generate (s/gen ::sut/fsm))
+          fsm-states (keys (::fsm.state/states fsm))]
+      (doseq [obj objects
+              :let [o (sut/assign obj fsm)]]
+        (testing (helpers/format "from `%s` metadata" (type obj))
+          (is (nil? (sut/get-fsm-states-names obj)))
+          (is (= fsm-states (sut/get-fsm-states-names o))))))))
+
+
+
 (deftest ^:unit get-fsm-initial-state-test
   (testing "getting `fsm` initial state:"
     (let [fsm (gen/generate (s/gen ::sut/fsm))]
