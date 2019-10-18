@@ -6,7 +6,18 @@ on:
       - '*'
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: borkdude/clj-kondo
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run linter
+        run: clj-kondo --lint src:test
+
+
   test:
+    needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
