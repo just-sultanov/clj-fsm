@@ -1,14 +1,21 @@
-name: build
+name: ci
 
-on: push
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [ '1.8', '11.0.x', '12.0.x' ]
     name: Testing on java ${{ matrix.java }}
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -34,8 +41,20 @@ jobs:
 
       - name: Upload coverage
         run: curl -s https://codecov.io/bash | bash -s -- -c -F aFlag -f ./target/coverage/codecov.json
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+
+  build:
+    needs: test
+    steps:
       - name: Run build
         run: make build
+
+
+  deploy:
+    needs: build
+    env:
+      CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+      CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+    steps:
+      - name: Run deploy
+        run: make deploy
