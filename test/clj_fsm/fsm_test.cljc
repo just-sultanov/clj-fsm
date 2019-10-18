@@ -6,7 +6,6 @@
     [clojure.spec.alpha :as s]
     [clojure.test.check.generators :as gen]
     [clj-fsm.fsm.helpers :as helpers]
-    [clj-fsm.fsm.state :as fsm.state]
     [clj-fsm.fsm :as sut]))
 
 (def objects
@@ -79,7 +78,7 @@
 (deftest ^:unit get-fsm-states-test
   (testing "getting `fsm` states:"
     (let [fsm    (gen/generate (s/gen ::sut/fsm))
-          states (::fsm.state/states fsm)]
+          states (::sut/states fsm)]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -91,7 +90,7 @@
 (deftest ^:unit get-fsm-states-names-test
   (testing "getting `fsm` states names:"
     (let [fsm    (gen/generate (s/gen ::sut/fsm))
-          states (keys (::fsm.state/states fsm))]
+          states (keys (::sut/states fsm))]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))

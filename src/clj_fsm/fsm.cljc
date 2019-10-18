@@ -11,9 +11,10 @@
 
 (s/def ::name qualified-keyword?)
 (s/def ::desc string?)
+(s/def ::states ::fsm.state/states)
 
 (s/def ::fsm
-  (s/keys :req [::name ::desc ::fsm.state/states]))
+  (s/keys :req [::name ::desc ::states]))
 
 
 
@@ -49,7 +50,7 @@
 
 
 (defn get-fsm-states [data]
-  (::fsm.state/states (get-fsm data)))
+  (::states (get-fsm data)))
 
 
 (defn get-fsm-states-names [data]
