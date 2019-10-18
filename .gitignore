@@ -1,5 +1,6 @@
-.cpcache/
-.idea/
-target/
+.cljs_node_repl
+.cpcache
+.idea
+target
 *.iml
 pom.xml
