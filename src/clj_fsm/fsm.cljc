@@ -201,94 +201,47 @@
 
 
 
-#?(:clj
-   (extend-protocol IFSM
-     Object
-     (-assign [data fsm]
-       (assign data fsm))
+(extend-protocol IFSM
+  #?(:clj Object :cljs js/Object)
+  (-assign [data fsm]
+    (assign data fsm))
 
-     (-unassign [data]
-       (unassign data))
+  (-unassign [data]
+    (unassign data))
 
-     (-get-fsm [data]
-       (get-fsm data))
+  (-get-fsm [data]
+    (get-fsm data))
 
-     (-get-fsm-name [data]
-       (get-fsm-name data))
+  (-get-fsm-name [data]
+    (get-fsm-name data))
 
-     (-get-fsm-desc [data]
-       (get-fsm-desc data))
+  (-get-fsm-desc [data]
+    (get-fsm-desc data))
 
-     (-get-fsm-enter [data]
-       (get-fsm-enter data))
+  (-get-fsm-enter [data]
+    (get-fsm-enter data))
 
-     (-get-fsm-leave [data]
-       (get-fsm-leave data))
+  (-get-fsm-leave [data]
+    (get-fsm-leave data))
 
-     (-get-fsm-error [data]
-       (get-fsm-error data))
+  (-get-fsm-error [data]
+    (get-fsm-error data))
 
-     (-get-fsm-states [data]
-       (get-fsm-states data))
+  (-get-fsm-states [data]
+    (get-fsm-states data))
 
-     (-get-fsm-states-names [data]
-       (get-fsm-states-names data))
+  (-get-fsm-states-names [data]
+    (get-fsm-states-names data))
 
-     (-get-fsm-initial-state [data]
-       (get-fsm-initial-state data))
+  (-get-fsm-initial-state [data]
+    (get-fsm-initial-state data))
 
-     (-get-fsm-state
-       ([data]
-        (get-fsm-state data))
+  (-get-fsm-state
+    ([data]
+     (get-fsm-state data))
 
-       ([data name]
-        (get-fsm-state data name)))
+    ([data name]
+     (get-fsm-state data name)))
 
-     (-init [data]
-       (init data)))
-
-   :cljs
-   (extend-protocol IFSM
-     js/Object
-     (-assign [data fsm]
-       (assign data fsm))
-
-     (-unassign [data]
-       (unassign data))
-
-     (-get-fsm [data]
-       (get-fsm data))
-
-     (-get-fsm-name [data]
-       (get-fsm-name data))
-
-     (-get-fsm-desc [data]
-       (get-fsm-desc data))
-
-     (-get-fsm-enter [data]
-       (get-fsm-enter data))
-
-     (-get-fsm-leave [data]
-       (get-fsm-leave data))
-
-     (-get-fsm-error [data]
-       (get-fsm-error data))
-
-     (-get-fsm-states [data]
-       (get-fsm-states data))
-
-     (-get-fsm-states-names [data]
-       (get-fsm-states-names data))
-
-     (-get-fsm-initial-state [data]
-       (get-fsm-initial-state data))
-
-     (-get-fsm-state
-       ([data]
-        (get-fsm-state data))
-
-       ([data name]
-        (get-fsm-state data name)))
-
-     (-init [data]
-       (init data))))
+  (-init [data]
+    (init data)))
