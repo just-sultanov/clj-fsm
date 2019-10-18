@@ -45,6 +45,7 @@ jobs:
 
   build:
     needs: test
+    runs-on: ubuntu-latest
     steps:
       - name: Run build
         run: make build
@@ -52,6 +53,7 @@ jobs:
 
   deploy:
     needs: build
+    runs-on: ubuntu-latest
     env:
       CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
       CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
