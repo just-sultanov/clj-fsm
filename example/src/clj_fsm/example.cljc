@@ -55,6 +55,7 @@
 
 (comment
   ;; example 1
+
   (def d {:document/name   " sImplE nAme    "
           :document/author "John Doe"})
 
@@ -77,6 +78,10 @@
   (meta d1)
 
   (def d2 (fsm/init d1))
+  ;; => :on-enter
+  ;;    :on-error
+  ;;    :on-state-enter
+  ;;    :on-state-error
   (meta d2)
 
   (def d3 (fsm/init d2))
@@ -114,4 +119,5 @@
               fsm/init))
   (meta d1)
   (identity d1)
+  ;; => {:document/name "Simple name", :document/author "John Doe"}
   )
