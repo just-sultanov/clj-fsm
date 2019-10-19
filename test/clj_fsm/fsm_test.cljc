@@ -1,7 +1,6 @@
 (ns clj-fsm.fsm-test
-  (:refer-clojure :exclude [key])
   (:require
-    #?(:clj  [clojure.test :refer :all]
+    #?(:clj  [clojure.test :refer [deftest testing is]]
        :cljs [cljs.test :refer-macros [deftest testing is]])
     [clojure.spec.alpha :as s]
     [clojure.test.check.generators :as gen]
