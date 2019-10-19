@@ -113,11 +113,28 @@
                         :document/archived   {::fsm.state/desc "Archived"}
                         :document/rejected   {::fsm.state/desc "Rejected"}}})
 
+  ;;
+  ;; assign fsm to data
+  ;;
 
-  (def d1 (-> d
-              (fsm/assign f)
-              fsm/init))
-  (meta d1)
+  (def d1 (fsm/assign d f))
+
   (identity d1)
+  ; => {:document/name " sImplE nAme    ", :document/author "John Doe"}
+
+  (fsm/get-fsm-state d1)
+  ;; => nil
+
+
+  ;;
+  ;; transit to initial state
+  ;;
+
+  (def d2 (fsm/init d1))
+
+  (identity d2)
   ;; => {:document/name "Simple name", :document/author "John Doe"}
+
+  (fsm/get-fsm-state d2)
+  ;; => :document/unverified
   )
