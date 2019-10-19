@@ -29,41 +29,89 @@
 
 (defn on-enter [data]
   (println :on-enter)
-  (throw (ex-message "Boom!"))
+  (throw (ex-message "Boom on enter!"))
   data)
 
-(defn on-error [data error]
+(defn on-leave [data]
+  (println :on-leave)
+  data)
+
+(defn on-error [data]
   (println :on-error)
   data)
 
+(defn on-state-enter [data]
+  (println :on-state-enter)
+  (throw (ex-message "Boom on state enter!"))
+  data)
+
+(defn on-state-leave [data]
+  (println :on-state-leave)
+  data)
+
+(defn on-state-error [data]
+  (println :on-state-error)
+  data)
+
 (comment
-  (gen/generate (s/gen ::fsm/fsm))
+  ;; example 1
+  (def d {:document/name   " sImplE nAme    "
+          :document/author "John Doe"})
 
   (def f {::fsm/name   :acme/document-fsm
           ::fsm/desc   "Simple document FSM"
           ::fsm/enter  [on-enter]
+          ::fsm/leave  [on-leave]
           ::fsm/error  [on-error]
-          ::fsm/states {:document/unverified {::fsm.state/desc "Unverified", ::fsm.state/initial? true}
+          ::fsm/states {:document/unverified {::fsm.state/desc     "Unverified"
+                                              ::fsm.state/initial? true
+                                              ::fsm.state/enter    [on-state-enter]
+                                              ::fsm.state/leave    [on-state-leave]
+                                              ::fsm.state/error    [on-state-error]}
+                        :document/verified   {::fsm.state/desc "Verified"}
+                        :document/published  {::fsm.state/desc "Published"}
+                        :document/archived   {::fsm.state/desc "Archived"}
+                        :document/rejected   {::fsm.state/desc "Rejected"}}})
+
+  (def d1 (fsm/assign d f))
+  (meta d1)
+
+  (def d2 (fsm/init d1))
+  (meta d2)
+
+  (def d3 (fsm/init d2))
+  (meta d3)
+  (identity d3)
+
+  (fsm/init {})
+  ;; => error
+  )
+
+
+
+(comment
+  ;; example 2
+
+  (defn on-state-enter [data]
+    (update data :document/name (comp str/capitalize str/trim)))
+
+  (def d {:document/name   " sImplE nAme    "
+          :document/author "John Doe"})
+
+  (def f {::fsm/name   :acme/document-fsm
+          ::fsm/desc   "Simple document FSM"
+          ::fsm/states {:document/unverified {::fsm.state/desc     "Unverified"
+                                              ::fsm.state/initial? true
+                                              ::fsm.state/enter    [on-state-enter]}
                         :document/verified   {::fsm.state/desc "Verified"}
                         :document/published  {::fsm.state/desc "Published"}
                         :document/archived   {::fsm.state/desc "Archived"}
                         :document/rejected   {::fsm.state/desc "Rejected"}}})
 
 
-  (def f1 (fsm/assign document f))
-  (meta f1)
-
-  (def f2 (fsm/init f1))
-  (meta f2)
-
-  (def f3 (fsm/init f2))
-  (meta f3)
-
-  (fsm/init {})
-  ;; => error
-
-
-  (def fns [str/upper-case str/trim :document/name])
-  (def f (apply comp fns))
-  (f document)
+  (def d1 (-> d
+              (fsm/assign f)
+              fsm/init))
+  (meta d1)
+  (identity d1)
   )

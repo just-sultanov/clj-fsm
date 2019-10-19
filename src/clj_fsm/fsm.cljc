@@ -2,7 +2,6 @@
   "FSM core."
   (:require
     [clojure.spec.alpha :as s]
-    [clojure.test.check.generators :as gen]
     [clj-fsm.fsm.helpers :as helpers]
     [clj-fsm.fsm.state :as fsm.state]))
 
@@ -15,17 +14,9 @@
 (s/def ::state ::fsm.state/name)
 (s/def ::states ::fsm.state/states)
 
-(s/def ::fn
-  (s/with-gen
-    ifn?
-    (constantly (gen/return identity))))
-
-(s/def ::fns
-  (s/coll-of ::fn :kind vector? :min-count 1))
-
-(s/def ::enter ::fns)
-(s/def ::leave ::fns)
-(s/def ::error ::fns)
+(s/def ::enter ::fsm.state/enter)
+(s/def ::leave ::fsm.state/leave)
+(s/def ::error ::fsm.state/error)
 
 
 (s/def ::fsm
@@ -135,32 +126,134 @@
      (get name))))
 
 
+(defn get-fsm-state-enter
+  "Returns `fsm` state enter function."
+  {:added "0.1.10"}
+  [data name]
+  (::fsm.state/enter (get-fsm-state data name)))
+
+
+(defn get-fsm-state-leave
+  "Returns `fsm` state leave function."
+  {:added "0.1.10"}
+  [data name]
+  (::fsm.state/leave (get-fsm-state data name)))
+
+
+(defn get-fsm-state-error
+  "Returns `fsm` state error function."
+  {:added "0.1.10"}
+  [data name]
+  (::fsm.state/error (get-fsm-state data name)))
+
+
+(defn apply-fsm-on-error
+  "Applies `fsm` on-error function to the given data."
+  {:added "0.1.10"}
+  [data]
+  (if-some [error (get-fsm-error data)]
+    (let [on-error (apply comp error)]
+      (on-error data))
+    data))
+
+
+(defn apply-fsm-on-enter
+  "Applies `fsm` on-enter function to the given data."
+  {:added "0.1.10"}
+  [data]
+  (if-some [enter (get-fsm-enter data)]
+    (let [on-enter (apply comp enter)]
+      (try
+        (on-enter data)
+        (catch
+          #?@(:clj  [Throwable _]
+              :cljs [js/Error _])
+          (apply-fsm-on-error data))))
+    data))
+
+
+(defn apply-fsm-on-leave
+  "Applies `fsm` on-leave function to the given data."
+  {:added "0.1.10"}
+  [data]
+  (if-some [leave (get-fsm-leave data)]
+    (let [on-leave (apply comp leave)]
+      (try
+        (on-leave data)
+        (catch
+          #?@(:clj  [Throwable _]
+              :cljs [js/Error _])
+          (apply-fsm-on-error data))))
+    data))
+
+
+(defn apply-state-on-error
+  "Applies `fsm` state on-error function to the given data."
+  {:added "0.1.10"}
+  [data name]
+  (if-some [error (get-fsm-state-error data name)]
+    (let [on-error (apply comp error)]
+      (on-error data))
+    data))
+
+
+(defn apply-state-on-enter
+  "Applies `fsm` state on-enter function to the given data."
+  {:added "0.1.10"}
+  [data name]
+  (if-some [enter (get-fsm-state-enter data name)]
+    (let [on-enter (apply comp enter)]
+      (try
+        (on-enter data)
+        (catch
+          #?@(:clj  [Throwable _]
+              :cljs [js/Error _])
+          (apply-state-on-error data name))))
+    data))
+
+
+(defn apply-state-on-leave
+  "Applies `fsm` state on-leave function to the given data."
+  {:added "0.1.10"}
+  [data name]
+  (if-some [leave (get-fsm-state-leave data name)]
+    (let [on-leave (apply comp leave)]
+      (try
+        (on-leave data)
+        (catch
+          #?@(:clj  [Throwable _]
+              :cljs [js/Error _])
+          (apply-state-on-error data name))))
+    data))
+
+
+;; TODO: Write doc about lifecycle
+;; - assign fsm to data
+;; - init (transit to initial state):
+;;   - invoke global fsm enter fn
+;;   - invoke initial state on enter fn
+;;   - set fsm current state to initial
+
 (defn apply-state
   "Apply state by the given state name."
   {:added "0.1.9"}
   ([data]
    (let [name (get-fsm-initial-state data)]
-     (if-some [enter (get-fsm-enter data)]
-       (let [on-enter (apply comp enter)]
-         (try
-           (apply-state (on-enter data) name) ;; TODO: add guard or enter fn is enough?
-           (catch
-             #?@(:clj  [Throwable e]
-                 :cljs [js/Error e])
-             (if-some [error (get-fsm-error data)]
-               (let [on-error (apply comp error)]
-                 (on-error data e)))))) ;; TODO: return data + error?
-       (apply-state data name))))
+     (apply-state data name)))
 
   ([data name]
-   (let [fsm (get-fsm data)]
-     (if-some [_ (get-fsm-state data name)]
-       (let [fsm' (assoc fsm ::state name)]
-         (assign data fsm')) ;; TODO: add enter/leave/error/guard fns to the ::fsm/state and rewrite
-       (throw
-         (ex-info (helpers/format "No `fsm` state with the given name: `%s`" name)
-                  {:fsm  fsm
-                   :name name}))))))
+   (if-some [_ (get-fsm-state data name)]
+     (let [fsm     (get-fsm data)
+           initial (get-fsm-initial-state data) ;; TODO: create `get-fsm-finite-state` to dispatch on-leave fn?
+           data'   (cond-> data
+                     (= name initial) (apply-fsm-on-enter)
+                     :always (apply-state-on-enter name))
+           fsm'    (assoc fsm ::state name)]
+       (assign data' fsm'))
+     (throw
+       (ex-info (helpers/format "No `fsm` state with the given name: `%s`" name)
+                {:fsm  (get-fsm data)
+                 :name name})))))
 
 
 (defn init
@@ -197,6 +290,9 @@
   (-get-fsm-states-names [data])
   (-get-fsm-initial-state [data])
   (-get-fsm-state [data] [data name])
+  (-get-fsm-state-enter [data name])
+  (-get-fsm-state-leave [data name])
+  (-get-fsm-state-error [data name])
   (-init [data]))
 
 
@@ -242,6 +338,15 @@
 
     ([data name]
      (get-fsm-state data name)))
+
+  (-get-fsm-state-enter [data name]
+    (get-fsm-state-enter data name))
+
+  (-get-fsm-state-leave [data name]
+    (get-fsm-state-leave data name))
+
+  (-get-fsm-state-error [data name]
+    (get-fsm-state-error data name))
 
   (-init [data]
     (init data)))
