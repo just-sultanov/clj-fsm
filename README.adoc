@@ -24,59 +24,9 @@ Add the following dependency in your project:
 
 ----
 
-=== Usage
+=== Examples
 
-[source,clojure]
-----
-(ns example
-  :require
-    [clojure.string :as str]
-    [clj-fsm.fsm :as fsm]
-    [clj-fsm.fsm.state :as fsm.state]
-    [clj-fsm.fsm.event :as fsm.event])
-
-(defn on-state-enter [data]
-  (update data :document/name (comp str/capitalize str/trim)))
-
-(def document {:document/name   " sImplE nAme    "
-               :document/author "John Doe"})
-
-(def document-fsm
-  {::fsm/name   :document/fsm
-   ::fsm/desc   "Simple document FSM"
-   ::fsm/states {:document/unverified {::fsm.state/desc     "Unverified"
-                                       ::fsm.state/initial? true
-                                       ::fsm.state/enter    [on-state-enter]}
-                 :document/verified   {::fsm.state/desc "Verified"}
-                 :document/published  {::fsm.state/desc "Published"}
-                 :document/archived   {::fsm.state/desc "Archived"}
-                 :document/rejected   {::fsm.state/desc "Rejected"}}})
-
-  ;;
-  ;; assign fsm to data
-  ;;
-
-  (def document (fsm/assign document document-fsm))
-
-  (identity document)
-  ; => {:document/name " sImplE nAme    ", :document/author "John Doe"}
-
-  (fsm/get-fsm-state document)
-  ;; => nil
-
-
-  ;;
-  ;; transit to initial state
-  ;;
-
-  (def document (fsm/init document))
-
-  (identity document)
-  ;; => {:document/name "Simple name", :document/author "John Doe"}
-
-  (fsm/get-fsm-state document)
-  ;; => :document/unverified
-----
+You can see full examples link:example/src/clj_fsm/example.cljc[here].
 
 === Development
 
