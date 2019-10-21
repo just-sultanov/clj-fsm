@@ -6,7 +6,9 @@ image:https://img.shields.io/clojars/v/clj-fsm.svg[Clojars, link=https://clojars
 
 == clj-fsm
 
-Simple finite state machine (FSM) in Clojure(Script)
+Finite state machine (FSM) for Clojure(Script).
+
+STATUS: Pre-alpha, in design and prototyping phase.
 
 === Quick Start Guide
 
@@ -24,18 +26,104 @@ Add the following dependency in your project:
 
 === Usage
 
-TBD
+[source,clojure]
+----
+(ns example
+  :require
+    [clojure.string :as str]
+    [clj-fsm.fsm :as fsm]
+    [clj-fsm.fsm.state :as fsm.state]
+    [clj-fsm.fsm.event :as fsm.event])
+
+(defn on-state-enter [data]
+  (update data :document/name (comp str/capitalize str/trim)))
+
+(def document {:document/name   " sImplE nAme    "
+               :document/author "John Doe"})
+
+(def document-fsm
+  {::fsm/name   :document/fsm
+   ::fsm/desc   "Simple document FSM"
+   ::fsm/states {:document/unverified {::fsm.state/desc     "Unverified"
+                                       ::fsm.state/initial? true
+                                       ::fsm.state/enter    [on-state-enter]}
+                 :document/verified   {::fsm.state/desc "Verified"}
+                 :document/published  {::fsm.state/desc "Published"}
+                 :document/archived   {::fsm.state/desc "Archived"}
+                 :document/rejected   {::fsm.state/desc "Rejected"}}})
+
+  ;;
+  ;; assign fsm to data
+  ;;
+
+  (def document (fsm/assign document document-fsm))
+
+  (identity document)
+  ; => {:document/name " sImplE nAme    ", :document/author "John Doe"}
+
+  (fsm/get-fsm-state document)
+  ;; => nil
+
+
+  ;;
+  ;; transit to initial state
+  ;;
+
+  (def document (fsm/init document))
+
+  (identity document)
+  ;; => {:document/name "Simple name", :document/author "John Doe"}
+
+  (fsm/get-fsm-state document)
+  ;; => :document/unverified
+----
+
+=== Testing
+
+[source,bash]
+----
+# Run Clojure tests
+$ make test-clj
+
+
+# Run ClojureScript tests
+$ make test-cljs
+
+
+# Run Clojure & ClojureScript tests
+$ make test
+----
 
 === Deploy
 
 [source,bash]
 ----
+# commit all changes then
 # create a new git tag (available types `minor`, `major`)
 $ make patch
 
 # push a new git tag to Github then wait for GitHub Actions
 # start to deploy the new version to clojars
 $ git push origin --tags
+----
+
+=== Available commands
+
+[source,bash]
+----
+$ make help
+help                           Show help
+repl                           Run nREPL
+clean                          Clean
+test-clj                       Run Clojure tests
+test-cljs                      Run ClojureScript tests
+test                           Run all tests
+build                          Build jar
+init                           Init first version
+patch                          Increment patch version
+minor                          Increment minor version
+major                          Increment major version
+deploy                         Deploy to clojars
 ----
 
 ==== Changelog
