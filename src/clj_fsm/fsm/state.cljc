@@ -7,11 +7,12 @@
 (s/def ::name qualified-keyword?)
 (s/def ::desc string?)
 (s/def ::initial? boolean?)
+(s/def ::finish? boolean?)
 
 (s/def ::fn
   (s/with-gen
     ifn?
-    (constantly (gen/return identity))))
+    (constantly (gen/return (comp identity first)))))
 
 (s/def ::fns
   (s/coll-of ::fn :kind vector? :min-count 1))
@@ -23,17 +24,23 @@
 
 (s/def ::state
   (s/keys :req [::desc]
-          :opt [::initial? ::enter ::leave ::error]))
+          :opt [::initial? ::finish? ::enter ::leave ::error]))
 
 
 ;; TODO: rewrite with loop/recur for performance optimization
 (defn states-valid? [states]
-  (some->> states
-    (map (fn [[_ v]]
-           (::initial? v)))
-    (filter true?)
-    count
-    (= 1)))
+  (->> states
+       (reduce-kv (fn [acc _ v]
+                    (let [initial? (::initial? v)
+                          finish?  (::finish? v)]
+                      (cond
+                        (and initial?
+                             (not finish?)) (update acc 0 inc)
+                        (and finish?
+                             (not initial?)) (update acc 1 inc)
+                        :else acc)))
+                  [0 0])
+       (= [1 1])))
 
 
 (s/def ::states
