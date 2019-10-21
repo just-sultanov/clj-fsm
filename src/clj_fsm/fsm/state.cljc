@@ -28,7 +28,11 @@
 
 
 ;; TODO: rewrite with loop/recur for performance optimization
-(defn states-valid? [states]
+(defn states-valid?
+  "Returns `true` if the given states contains only one initial state and only one finish state.
+  Otherwise `false`."
+  {:added "0.1.4"}
+  [states]
   (->> states
        (reduce-kv (fn [acc _ v]
                     (let [initial? (::initial? v)
