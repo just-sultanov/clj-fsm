@@ -78,6 +78,15 @@ Add the following dependency in your project:
   ;; => :document/unverified
 ----
 
+=== Development
+
+[source,bash]
+----
+# Run nREPL & connect from your IDE
+$ make repl
+nREPL server started on port 7888 on host localhost - nrepl://localhost:7888
+----
+
 === Testing
 
 [source,bash]
