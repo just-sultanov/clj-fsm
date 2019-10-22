@@ -2,8 +2,6 @@
   "FSM usage example."
   (:require
     [clojure.string :as str]
-    [clojure.spec.alpha :as s]
-    [clojure.test.check.generators :as gen]
     [clj-fsm.fsm :as fsm]
     [clj-fsm.fsm.state]
     [clj-fsm.fsm.event]))
