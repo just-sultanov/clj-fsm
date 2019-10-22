@@ -34,7 +34,7 @@ test-cljs: ## Run ClojureScript tests
 	@echo "=================================================================="
 	@echo "Run ClojureScript tests..."
 	@echo "=================================================================="
-	clojure -R:common -A:test-cljs --env node --compile-opts '{:optimizations :advanced}'
+	clojure -R:common -A:test-cljs --env node --compile-opts '{:optimizations :none}'
 	@echo -e "\n"
 
 

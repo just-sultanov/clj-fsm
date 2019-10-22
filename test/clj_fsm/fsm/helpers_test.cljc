@@ -16,3 +16,17 @@
   (testing "should be returned a correctly formatted a string"
     (is (= "hello, world!" (sut/format "hello, %s!" "world")))
     (is (= "hello, 42!" (sut/format "hello, %d!" 42)))))
+
+
+
+(deftest ^:unit fn-name-test
+  (testing "should be returned a correct function name"
+    #?@(:clj
+        (do
+          (is (= "clojure.core/identity" (sut/fn-name identity)))
+          (is (= "clojure.core/some" (sut/fn-name some))))
+
+        :cljs
+        (do
+          (is (= "cljs.core/identity" (sut/fn-name identity)))
+          (is (= "cljs.core/some" (sut/fn-name some)))))))
