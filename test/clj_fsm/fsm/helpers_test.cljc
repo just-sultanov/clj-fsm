@@ -30,3 +30,11 @@
         (do
           (is (= "cljs.core/identity" (sut/fn-name identity)))
           (is (= "cljs.core/some" (sut/fn-name some)))))))
+
+
+
+(deftest ^:unit to-coll-test
+  (testing "should be returned a correct vector"
+    (is (= [] (sut/to-coll nil)))
+    (is (= [1] (sut/to-coll 1)))
+    (is (= [1] (sut/to-coll [1])))))

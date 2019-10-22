@@ -43,3 +43,15 @@
            ((juxt butlast last) $)
            (update $ 0 #(str/join "." %))
            (str/join "/" $))))
+
+
+(defn to-coll
+  "Returns vector of `x`.
+  If `x` is sequential returns `as is`, else returns `x` in vector.
+  Otherwise, if `x` is nil returns an empty vector."
+  {:added "0.1.18"}
+  [x]
+  (cond
+    (sequential? x) x
+    (some? x) [x]
+    :else []))
