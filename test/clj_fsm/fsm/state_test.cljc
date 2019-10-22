@@ -46,69 +46,69 @@
 (deftest ^:unit states-validation-test
   (testing "states validation:"
     (testing "should be returned `false` with a missing initial and finish states"
-      (let [v {:document/unverified {::sut/desc "Unverified"}
-               :document/verified   {::sut/desc "Verified"}
-               :document/published  {::sut/desc "Published"}
-               :document/archived   {::sut/desc "Archived"}
-               :document/rejected   {::sut/desc "Rejected"}}]
+      (let [v {:document/unverified {::sut/description "Unverified"}
+               :document/verified   {::sut/description "Verified"}
+               :document/published  {::sut/description "Published"}
+               :document/archived   {::sut/description "Archived"}
+               :document/rejected   {::sut/description "Rejected"}}]
         (is (false? (sut/states-valid? v)))
         (is (false? (s/valid? ::sut/states v)))))
 
     (testing "should be returned `false` with a missing initial state"
-      (let [v1 {:document/unverified {::sut/desc "Unverified"}
-                :document/verified   {::sut/desc "Verified"}
-                :document/published  {::sut/desc "Published"}
-                :document/archived   {::sut/desc "Archived"}
-                :document/rejected   {::sut/desc "Rejected", ::sut/finish? true}}
-            v2 {:document/unverified {:sut/:desc "Unverified"}
-                :document/verified   {:sut/:desc "Verified"}
-                :document/published  {:sut/:desc "Published"}
-                :document/archived   {:sut/:desc "Archived", ::sut/initial? false}
-                :document/rejected   {:sut/:desc "Rejected", ::sut/finish? true}}]
+      (let [v1 {:document/unverified {::sut/description "Unverified"}
+                :document/verified   {::sut/description "Verified"}
+                :document/published  {::sut/description "Published"}
+                :document/archived   {::sut/description "Archived"}
+                :document/rejected   {::sut/description "Rejected", ::sut/finish? true}}
+            v2 {:document/unverified {::sut/description "Unverified"}
+                :document/verified   {::sut/description "Verified"}
+                :document/published  {::sut/description "Published"}
+                :document/archived   {::sut/description "Archived", ::sut/initial? false}
+                :document/rejected   {::sut/description "Rejected", ::sut/finish? true}}]
         (is (false? (sut/states-valid? v1)))
         (is (false? (sut/states-valid? v2)))
         (is (false? (s/valid? ::sut/states v1)))
         (is (false? (s/valid? ::sut/states v2)))))
 
     (testing "should be returned `false` with more that one initial states"
-      (let [v {:document/unverified {:sut/:desc "Unverified", ::sut/initial? true}
-               :document/verified   {:sut/:desc "Verified"}
-               :document/published  {:sut/:desc "Published"}
-               :document/archived   {:sut/:desc "Archived", ::sut/initial? true}
-               :document/rejected   {:sut/:desc "Rejected", ::sut/finish? true}}]
+      (let [v {:document/unverified {::sut/description "Unverified", ::sut/initial? true}
+               :document/verified   {::sut/description "Verified"}
+               :document/published  {::sut/description "Published"}
+               :document/archived   {::sut/description "Archived", ::sut/initial? true}
+               :document/rejected   {::sut/description "Rejected", ::sut/finish? true}}]
         (is (false? (sut/states-valid? v)))
         (is (false? (s/valid? ::sut/states v)))))
 
     (testing "should be returned `false` with a missing finish state"
-      (let [v1 {:document/unverified {::sut/desc "Unverified", ::sut/initial? true}
-                :document/verified   {::sut/desc "Verified"}
-                :document/published  {::sut/desc "Published"}
-                :document/archived   {::sut/desc "Archived"}
-                :document/rejected   {::sut/desc "Rejected"}}
-            v2 {:document/unverified {::sut/desc "Unverified", ::sut/initial? true}
-                :document/verified   {::sut/desc "Verified"}
-                :document/published  {::sut/desc "Published"}
-                :document/archived   {::sut/desc "Archived"}
-                :document/rejected   {::sut/desc "Rejected", ::sut/finish? false}}]
+      (let [v1 {:document/unverified {::sut/description "Unverified", ::sut/initial? true}
+                :document/verified   {::sut/description "Verified"}
+                :document/published  {::sut/description "Published"}
+                :document/archived   {::sut/description "Archived"}
+                :document/rejected   {::sut/description "Rejected"}}
+            v2 {:document/unverified {::sut/description "Unverified", ::sut/initial? true}
+                :document/verified   {::sut/description "Verified"}
+                :document/published  {::sut/description "Published"}
+                :document/archived   {::sut/description "Archived"}
+                :document/rejected   {::sut/description "Rejected", ::sut/finish? false}}]
         (is (false? (sut/states-valid? v1)))
         (is (false? (sut/states-valid? v2)))
         (is (false? (s/valid? ::sut/states v1)))
         (is (false? (s/valid? ::sut/states v2)))))
 
     (testing "should be returned `false` with more that one finish states"
-      (let [v {:document/unverified {:sut/:desc "Unverified", ::sut/finish? true}
-               :document/verified   {:sut/:desc "Verified"}
-               :document/published  {:sut/:desc "Published"}
-               :document/archived   {:sut/:desc "Archived", ::sut/initial? true}
-               :document/rejected   {:sut/:desc "Rejected", ::sut/finish? true}}]
+      (let [v {:document/unverified {::sut/description "Unverified", ::sut/finish? true}
+               :document/verified   {::sut/description "Verified"}
+               :document/published  {::sut/description "Published"}
+               :document/archived   {::sut/description "Archived", ::sut/initial? true}
+               :document/rejected   {::sut/description "Rejected", ::sut/finish? true}}]
         (is (false? (sut/states-valid? v)))
         (is (false? (s/valid? ::sut/states v)))))
 
     (testing "should be returned `false` when a state defined as `initial` and `finish`"
-      (let [v {:document/unverified {:sut/:desc "Unverified"}
-               :document/verified   {:sut/:desc "Verified"}
-               :document/published  {:sut/:desc "Published"}
-               :document/archived   {:sut/:desc "Archived"}
-               :document/rejected   {:sut/:desc "Rejected", ::sut/initial? true, ::sut/finish? true}}]
+      (let [v {:document/unverified {::sut/description "Unverified"}
+               :document/verified   {::sut/description "Verified"}
+               :document/published  {::sut/description "Published"}
+               :document/archived   {::sut/description "Archived"}
+               :document/rejected   {::sut/description "Rejected", ::sut/initial? true, ::sut/finish? true}}]
         (is (false? (sut/states-valid? v)))
         (is (false? (s/valid? ::sut/states v)))))))

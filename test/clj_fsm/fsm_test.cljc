@@ -66,15 +66,15 @@
 
 
 
-(deftest ^:unit get-fsm-desc-test
-  (testing "getting `fsm` desc:"
+(deftest ^:unit get-fsm-description-test
+  (testing "getting `fsm` description:"
     (let [fsm  (gen/generate (s/gen ::sut/fsm))
-          desc (::sut/desc fsm)]
+          desc (::sut/description fsm)]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
-          (is (nil? (sut/get-fsm-desc obj)))
-          (is (= desc (sut/get-fsm-desc o))))))))
+          (is (nil? (sut/get-fsm-description obj)))
+          (is (= desc (sut/get-fsm-description o))))))))
 
 
 
@@ -167,25 +167,25 @@
   (testing "initializing `fsm`:"
     (let [d    {:document/name   " sImplE nAme    "
                 :document/author "John Doe"}
-          f    {::sut/name   :document/fsm
-                ::sut/desc   "Simple document FSM"
-                ::sut/states {:document/unverified {::fsm.state/desc "Unverified", ::fsm.state/initial? true}
-                              :document/verified   {::fsm.state/desc "Verified"}
-                              :document/published  {::fsm.state/desc "Published"}
-                              :document/archived   {::fsm.state/desc "Archived", ::fsm.state/finish? true}
-                              :document/rejected   {::fsm.state/desc "Rejected"}}
-                ::sut/events {:document/verify    {::fsm.event/transition-from [:document/unverified]
-                                                   ::fsm.event/transition-to   [:document/verified]}
-                              :document/reject    {::fsm.event/transition-from [:document/unverified]
-                                                   ::fsm.event/transition-to   [:document/rejected]}
-                              :document/reverify  {::fsm.event/transition-from [:document/verified]
-                                                   ::fsm.event/transition-to   [:document/unverified]}
-                              :document/publish   {::fsm.event/transition-from [:document/verified]
-                                                   ::fsm.event/transition-to   [:document/published]}
-                              :document/unpublish {::fsm.event/transition-from [:document/published]
-                                                   ::fsm.event/transition-to   [:document/verified]}
-                              :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
-                                                   ::fsm.event/transition-to   [:document/archived]}}}
+          f    {::sut/name        :document/fsm
+                ::sut/description "Simple document FSM"
+                ::sut/states      {:document/unverified {::fsm.state/description "Unverified", ::fsm.state/initial? true}
+                                   :document/verified   {::fsm.state/description "Verified"}
+                                   :document/published  {::fsm.state/description "Published"}
+                                   :document/archived   {::fsm.state/description "Archived", ::fsm.state/finish? true}
+                                   :document/rejected   {::fsm.state/description "Rejected"}}
+                ::sut/events      {:document/verify    {::fsm.event/transition-from [:document/unverified]
+                                                        ::fsm.event/transition-to   [:document/verified]}
+                                   :document/reject    {::fsm.event/transition-from [:document/unverified]
+                                                        ::fsm.event/transition-to   [:document/rejected]}
+                                   :document/reverify  {::fsm.event/transition-from [:document/verified]
+                                                        ::fsm.event/transition-to   [:document/unverified]}
+                                   :document/publish   {::fsm.event/transition-from [:document/verified]
+                                                        ::fsm.event/transition-to   [:document/published]}
+                                   :document/unpublish {::fsm.event/transition-from [:document/published]
+                                                        ::fsm.event/transition-to   [:document/verified]}
+                                   :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
+                                                        ::fsm.event/transition-to   [:document/archived]}}}
           data (sut/assign d f)]
 
       (testing "should be returned a valid initial state name"

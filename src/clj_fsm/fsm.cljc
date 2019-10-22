@@ -11,7 +11,7 @@
 ;;
 
 (s/def ::name qualified-keyword?)
-(s/def ::desc string?)
+(s/def ::description string?)
 (s/def ::current ::fsm.state/name)
 (s/def ::states ::fsm.state/states)
 (s/def ::previous (s/nilable ::fsm.state/name))
@@ -23,12 +23,14 @@
 (s/def ::event ::fsm.event/name)
 (s/def ::events ::fsm.event/events)
 
+;; aliases
+
 (s/def ::uninitialized
-  (s/keys :req [::name ::desc ::states ::events]
+  (s/keys :req [::name ::description ::states ::events]
           :opt [::enter ::leave ::error]))
 
 (s/def ::initialized
-  (s/keys :req [::name ::desc ::current ::previous ::states ::events]
+  (s/keys :req [::name ::description ::current ::previous ::states ::events]
           :opt [::enter ::leave ::error]))
 
 (s/def ::fsm
@@ -75,11 +77,11 @@
   (::name (get-fsm data)))
 
 
-(defn get-fsm-desc
-  "Returns `fsm` desc."
+(defn get-fsm-description
+  "Returns `fsm` description."
   {:added "0.1.4"}
   [data]
-  (::desc (get-fsm data)))
+  (::description (get-fsm data)))
 
 
 (defn get-fsm-enter
@@ -412,7 +414,7 @@
   (-unassign [data])
   (-get-fsm [data])
   (-get-fsm-name [data])
-  (-get-fsm-desc [data])
+  (-get-fsm-description [data])
   (-get-fsm-enter [data])
   (-get-fsm-leave [data])
   (-get-fsm-error [data])
@@ -449,8 +451,8 @@
   (-get-fsm-name [data]
     (get-fsm-name data))
 
-  (-get-fsm-desc [data]
-    (get-fsm-desc data))
+  (-get-fsm-description [data]
+    (get-fsm-description data))
 
   (-get-fsm-enter [data]
     (get-fsm-enter data))

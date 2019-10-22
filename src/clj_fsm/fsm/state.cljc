@@ -5,7 +5,7 @@
     [clojure.test.check.generators :as gen]))
 
 (s/def ::name qualified-keyword?)
-(s/def ::desc string?)
+(s/def ::description string?)
 (s/def ::initial? boolean?)
 (s/def ::finish? boolean?)
 
@@ -23,7 +23,7 @@
 
 
 (s/def ::state
-  (s/keys :req [::desc]
+  (s/keys :req [::description]
           :opt [::initial? ::finish? ::enter ::leave ::error]))
 
 

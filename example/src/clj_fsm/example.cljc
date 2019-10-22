@@ -47,28 +47,28 @@
         ::fsm/enter  [on-enter]
         ::fsm/leave  [on-leave]
         ::fsm/error  [on-error]
-        ::fsm/states {:document/unverified {::fsm.state/desc     "Unverified"
-                                            ::fsm.state/initial? true
-                                            ::fsm.state/enter    [on-initial-state-enter]
-                                            ::fsm.state/leave    [on-state-leave]
-                                            ::fsm.state/error    [on-state-error]}
-                      :document/verified   {::fsm.state/desc  "Verified"
-                                            ::fsm.state/enter [on-state-enter]
-                                            ::fsm.state/leave [on-state-leave]
-                                            ::fsm.state/error [on-state-error]}
-                      :document/published  {::fsm.state/desc  "Published"
-                                            ::fsm.state/enter [on-state-enter]
-                                            ::fsm.state/leave [on-state-leave]
-                                            ::fsm.state/error [on-state-error]}
-                      :document/archived   {::fsm.state/desc    "Archived"
-                                            ::fsm.state/enter   [on-state-enter]
-                                            ::fsm.state/leave   [on-state-leave]
-                                            ::fsm.state/error   [on-state-error]
-                                            ::fsm.state/finish? true}
-                      :document/rejected   {::fsm.state/desc  "Rejected"
-                                            ::fsm.state/enter [on-state-enter]
-                                            ::fsm.state/leave [on-state-leave]
-                                            ::fsm.state/error [on-state-error]}}
+        ::fsm/states {:document/unverified {::fsm.state/description "Unverified"
+                                            ::fsm.state/initial?    true
+                                            ::fsm.state/enter       [on-initial-state-enter]
+                                            ::fsm.state/leave       [on-state-leave]
+                                            ::fsm.state/error       [on-state-error]}
+                      :document/verified   {::fsm.state/description "Verified"
+                                            ::fsm.state/enter       [on-state-enter]
+                                            ::fsm.state/leave       [on-state-leave]
+                                            ::fsm.state/error       [on-state-error]}
+                      :document/published  {::fsm.state/description "Published"
+                                            ::fsm.state/enter       [on-state-enter]
+                                            ::fsm.state/leave       [on-state-leave]
+                                            ::fsm.state/error       [on-state-error]}
+                      :document/archived   {::fsm.state/description "Archived"
+                                            ::fsm.state/enter       [on-state-enter]
+                                            ::fsm.state/leave       [on-state-leave]
+                                            ::fsm.state/error       [on-state-error]
+                                            ::fsm.state/finish?     true}
+                      :document/rejected   {::fsm.state/description "Rejected"
+                                            ::fsm.state/enter       [on-state-enter]
+                                            ::fsm.state/leave       [on-state-leave]
+                                            ::fsm.state/error       [on-state-error]}}
         ::fsm/events {:document/verify    {::fsm.event/transition-from [:document/unverified]
                                            ::fsm.event/transition-to   [:document/verified]}
                       :document/reject    {::fsm.event/transition-from [:document/unverified]
