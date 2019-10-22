@@ -77,158 +77,57 @@
   (get (meta data) meta-fsm-key))
 
 
-(defn get-fsm-name
-  "Returns `fsm` name."
-  {:added "0.1.4"}
-  [data]
-  (:fsm/name (get-fsm data)))
-
-
-(defn get-fsm-description
-  "Returns `fsm` description."
-  {:added "0.1.4"}
-  [data]
-  (:fsm/description (get-fsm data)))
-
-
-(defn get-fsm-enter
-  "Returns `fsm` enter function."
-  {:added "0.1.9"}
-  [data]
-  (:fsm/enter (get-fsm data)))
-
-
-(defn get-fsm-leave
-  "Returns `fsm` leave function."
-  {:added "0.1.9"}
-  [data]
-  (:fsm/leave (get-fsm data)))
-
-
-(defn get-fsm-error
-  "Returns `fsm` error function."
-  {:added "0.1.9"}
-  [data]
-  (:fsm/error (get-fsm data)))
-
-
-(defn get-fsm-states
-  "Returns `fsm` states."
-  {:added "0.1.4"}
-  [data]
-  (:fsm/states (get-fsm data)))
-
-
-(defn get-fsm-states-names
-  "Returns `fsm` states names."
-  {:added "0.1.9"}
-  [data]
-  (keys (get-fsm-states data)))
-
-
-(defn get-fsm-current-state
-  "Returns `fsm` current state name."
-  {:added "0.1.14"}
-  [data]
-  (:fsm/current (get-fsm data)))
-
-
-(defn get-fsm-previous-state
-  "Returns `fsm` previous state name."
-  {:added "0.1.14"}
-  [data]
-  (:fsm/previous (get-fsm data)))
-
-
-(defn get-fsm-initial-state
+(defn fsm->initial-state
   "Returns `fsm` initial state name."
   {:added "0.1.9"}
-  [data]
-  (some->> data
-    get-fsm-states
+  [fsm]
+  (some->> fsm
+    :fsm/states
     (helpers/find-first #(some? (:state/initial? (second %))))
     first))
 
 
-(defn get-fsm-finish-state
+(defn fsm->finish-state
   "Returns `fsm` finish state name."
   {:added "0.1.14"}
-  [data]
-  (some->> data
-    get-fsm-states
+  [fsm]
+  (some->> fsm
+    :fsm/states
     (helpers/find-first #(some? (:state/finish? (second %))))
     first))
 
 
-(defn get-fsm-state
+(defn fsm->state
   "Returns `fsm` state by the given state name."
   {:added "0.1.7"}
-  [data name]
-  (some-> data
-    get-fsm-states
+  [fsm name]
+  (some-> fsm
+    :fsm/states
     (get name)))
 
 
-(defn get-fsm-state-enter
-  "Returns `fsm` state enter function."
-  {:added "0.1.10"}
-  [data name]
-  (:state/enter (get-fsm-state data name)))
-
-
-(defn get-fsm-state-leave
-  "Returns `fsm` state leave function."
-  {:added "0.1.10"}
-  [data name]
-  (:state/leave (get-fsm-state data name)))
-
-
-(defn get-fsm-state-error
-  "Returns `fsm` state error function."
-  {:added "0.1.10"}
-  [data name]
-  (:state/error (get-fsm-state data name)))
-
-
-(defn get-fsm-events
-  "Returns `fsm` events."
-  {:added "0.1.14"}
-  [data]
-  (:fsm/events (get-fsm data)))
-
-
-(defn get-fsm-events-names
-  "Returns `fsm` events names."
-  {:added "0.1.14"}
-  [data]
-  (keys (get-fsm-events data)))
-
-
-(defn get-fsm-event
+(defn fsm->event
   "Returns `fsm` event by the given event name."
   {:added "0.1.14"}
-  [data name]
-  (some-> data
-    get-fsm-events
+  [fsm name]
+  (some-> fsm
+    :fsm/events
     (get name)))
 
 
-(defn init?
+(defn fsm-initialized?
   "Returns `true` when `fsm` has been initialized. Otherwise `false`."
   {:added "0.1.14"}
-  [data]
-  (and
-    (get-fsm-current-state data)
-    (get-fsm-initial-state data)
-    true))
+  [fsm]
+  (some? (:fsm/current fsm)))
 
 
-(defn finish?
-  "Returns `true` when `fsm` has been finished. Otherwise `false`."
+(defn fsm-finalized?
+  "Returns `true` when `fsm` has been finalized. Otherwise `false`."
   {:added "0.1.14"}
-  [data]
-  (let [current (get-fsm-current-state data)
-        finish  (get-fsm-finish-state data)]
+  [fsm]
+  (let [current (:fsm/current fsm)
+        finish  (fsm->finish-state fsm)]
     (and
       (= current finish)
       (every? some? [current finish]))))
@@ -238,80 +137,89 @@
   "Applies `fsm` on-error function to the given data."
   {:added "0.1.10"}
   [data name error]
-  (if-some [f (get-fsm-error data)]
-    (let [on-error (apply comp f)]
-      (on-error data name error))
-    data))
+  (let [fsm (get-fsm data)]
+    (if-some [f (:fsm/error fsm)]
+      (let [on-error (apply comp f)]
+        (on-error data name error))
+      data)))
 
 
 (defn apply-fsm-on-leave
   "Applies `fsm` on-leave function to the given data."
   {:added "0.1.10"}
   [data name]
-  (if-some [f (get-fsm-leave data)]
-    (let [on-leave (apply comp f)]
-      (try
-        (on-leave data name)
-        (catch
-          #?@(:clj  [Throwable error]
-              :cljs [js/Error error])
-          (apply-fsm-on-error data name error))))
-    data))
+  (let [fsm (get-fsm data)]
+    (if-some [f (:fsm/leave fsm)]
+      (let [on-leave (apply comp f)]
+        (try
+          (on-leave data name)
+          (catch
+            #?@(:clj  [Throwable error]
+                :cljs [js/Error error])
+            (apply-fsm-on-error data name error))))
+      data)))
 
 
 (defn apply-fsm-on-enter
   "Applies `fsm` on-enter function to the given data."
   {:added "0.1.10"}
   [data name]
-  (if-some [f (get-fsm-enter data)]
-    (let [on-enter (apply comp f)]
-      (try
-        (on-enter data name)
-        (catch
-          #?@(:clj  [Throwable error]
-              :cljs [js/Error error])
-          (apply-fsm-on-error data name error))))
-    data))
+  (let [fsm (get-fsm data)]
+    (if-some [f (:fsm/enter fsm)]
+      (let [on-enter (apply comp f)]
+        (try
+          (on-enter data name)
+          (catch
+            #?@(:clj  [Throwable error]
+                :cljs [js/Error error])
+            (apply-fsm-on-error data name error))))
+      data)))
 
 
 (defn apply-state-on-error
   "Applies `fsm` state on-error function to the given data."
   {:added "0.1.10"}
   [data name error]
-  (if-some [f (get-fsm-state-error data name)]
-    (let [on-error (apply comp f)]
-      (on-error data name error))
-    data))
+  (let [fsm   (get-fsm data)
+        state (fsm->state fsm name)]
+    (if-some [f (:state/error state)]
+      (let [on-error (apply comp f)]
+        (on-error data name error))
+      data)))
 
 
 (defn apply-state-on-leave
   "Applies `fsm` state on-leave function to the given data."
   {:added "0.1.10"}
   [data name]
-  (if-some [f (get-fsm-state-leave data name)]
-    (let [on-leave (apply comp f)]
-      (try
-        (on-leave data name)
-        (catch
-          #?@(:clj  [Throwable error]
-              :cljs [js/Error error])
-          (apply-state-on-error data name error))))
-    data))
+  (let [fsm   (get-fsm data)
+        state (fsm->state fsm name)]
+    (if-some [f (:state/leave state)]
+      (let [on-leave (apply comp f)]
+        (try
+          (on-leave data name)
+          (catch
+            #?@(:clj  [Throwable error]
+                :cljs [js/Error error])
+            (apply-state-on-error data name error))))
+      data)))
 
 
 (defn apply-state-on-enter
   "Applies `fsm` state on-enter function to the given data."
   {:added "0.1.10"}
   [data name]
-  (if-some [f (get-fsm-state-enter data name)]
-    (let [on-enter (apply comp f)]
-      (try
-        (on-enter data name)
-        (catch
-          #?@(:clj  [Throwable error]
-              :cljs [js/Error error])
-          (apply-state-on-error data name error))))
-    data))
+  (let [fsm   (get-fsm data)
+        state (fsm->state fsm name)]
+    (if-some [f (:state/enter state)]
+      (let [on-enter (apply comp f)]
+        (try
+          (on-enter data name)
+          (catch
+            #?@(:clj  [Throwable error]
+                :cljs [js/Error error])
+            (apply-state-on-error data name error))))
+      data)))
 
 
 ;; TODO: Write doc about lifecycle
@@ -325,24 +233,24 @@
   "Initializes `fsm`. If `fsm` has been initialized, then returns the given data without any changes."
   {:added "0.1.9"}
   [data]
-  (cond
-    (init? data)
-    data
+  (let [fsm (get-fsm data)]
+    (cond
+      (nil? fsm)
+      (throw
+        (ex-info "Not exists assigned `fsm` in the given data"
+                 {:data data
+                  :meta (meta data)}))
 
-    (nil? (get-fsm data))
-    (throw
-      (ex-info "Not exists assigned `fsm` in the given data"
-               {:data data
-                :meta (meta data)}))
+      (fsm-initialized? fsm)
+      data
 
-    :else
-    (let [fsm           (get-fsm data)
-          initial-state (get-fsm-initial-state data)
-          data'         (-> data
-                            (apply-fsm-on-enter initial-state)
-                            (apply-state-on-enter initial-state))
-          fsm'          (assoc fsm :fsm/current initial-state)]
-      (assign data' fsm'))))
+      :else
+      (let [initial-state (fsm->initial-state fsm)
+            data'         (-> data
+                              (apply-fsm-on-enter initial-state)
+                              (apply-state-on-enter initial-state))
+            fsm'          (assoc fsm :fsm/current initial-state)]
+        (assign data' fsm')))))
 
 
 (defn finish
@@ -350,63 +258,62 @@
   If `fsm` has been finalized, then returns the given data without any changes."
   {:added "0.1.14"}
   [data]
-  (cond
-    (finish? data)
-    data
+  (let [fsm (get-fsm data)]
+    (cond
+      (nil? fsm)
+      (throw
+        (ex-info "Not exists assigned `fsm` in the given data"
+                 {:data data
+                  :meta (meta data)}))
 
-    (nil? (get-fsm data))
-    (throw
-      (ex-info "Not exists assigned `fsm` in the given data"
-               {:data data
-                :meta (meta data)}))
+      (fsm-finalized? fsm)
+      data
 
-    (not (init? data))
-    (throw
-      (ex-info "Not initialized `fsm` in the given data"
-               {:data data
-                :meta (meta data)}))
+      (not (fsm-initialized? fsm))
+      (throw
+        (ex-info "Not initialized `fsm` in the given data"
+                 {:data data
+                  :meta (meta data)}))
 
-    :else
-    (let [fsm            (get-fsm data)
-          previous-state (get-fsm-current-state data)
-          finish-state   (get-fsm-finish-state data)
-          data'          (-> data
-                             (apply-state-on-leave previous-state)
-                             (apply-state-on-enter finish-state)
-                             (apply-fsm-on-leave finish-state))
-          fsm'           (assoc fsm :fsm/current finish-state
-                                    :fsm/previous previous-state)]
-      (assign data' fsm'))))
+      :else
+      (let [previous-state (:fsm/current fsm)
+            finish-state   (fsm->finish-state fsm)
+            data'          (-> data
+                               (apply-state-on-leave previous-state)
+                               (apply-state-on-enter finish-state)
+                               (apply-fsm-on-leave finish-state))
+            fsm'           (assoc fsm :fsm/current finish-state
+                                      :fsm/previous previous-state)]
+        (assign data' fsm')))))
 
 
 (defn apply-state
   "Apply state by the given state name."
   {:added "0.1.9"}
   [data next]
-  (cond
-    (nil? (get-fsm-state data next))
-    (throw
-      (ex-info (helpers/format "Not exists `fsm` state with the given name: `%s`" next)
-               {:fsm  (get-fsm data)
-                :name next}))
+  (let [fsm (get-fsm data)]
+    (cond
+      (nil? (fsm->state fsm next))
+      (throw
+        (ex-info (helpers/format "Not exists `fsm` state with the given name: `%s`" next)
+                 {:fsm  (fsm data)
+                  :name next}))
 
+      (= next (fsm->initial-state fsm))
+      (init data)
 
-    (= next (get-fsm-initial-state data))
-    (init data)
+      (= next (fsm->finish-state fsm))
+      (finish data)
 
-    (= next (get-fsm-finish-state data))
-    (finish data)
-
-    :else
-    (let [fsm     (get-fsm data)
-          current (get-fsm-current-state data)
-          data'   (cond-> data
-                    (some? current) (apply-state-on-leave current)
-                    :always (apply-state-on-enter next))
-          fsm'    (assoc fsm
-                    :fsm/current next
-                    :fsm/previous current)]
-      (assign data' fsm'))))
+      :else
+      (let [current (:fsm/current fsm)
+            data'   (cond-> data
+                      (some? current) (apply-state-on-leave current)
+                      :always (apply-state-on-enter next))
+            fsm'    (assoc fsm
+                      :fsm/current next
+                      :fsm/previous current)]
+        (assign data' fsm')))))
 
 
 
@@ -420,26 +327,12 @@
   (-assign [data fsm])
   (-unassign [data])
   (-get-fsm [data])
-  (-get-fsm-name [data])
-  (-get-fsm-description [data])
-  (-get-fsm-enter [data])
-  (-get-fsm-leave [data])
-  (-get-fsm-error [data])
-  (-get-fsm-states [data])
-  (-get-fsm-states-names [data])
-  (-get-fsm-initial-state [data])
-  (-get-fsm-previous-state [data])
-  (-get-fsm-current-state [data])
-  (-get-fsm-finish-state [data])
-  (-get-fsm-state [data name])
-  (-get-fsm-state-enter [data name])
-  (-get-fsm-state-leave [data name])
-  (-get-fsm-state-error [data name])
-  (-get-fsm-events [data])
-  (-get-fsm-events-names [data])
-  (-get-fsm-event [data name])
-  (-init? [data])
-  (-finish? [data])
+  (-fsm->state [fsm name])
+  (-fsm->initial-state [fsm])
+  (-fsm->finish-state [fsm])
+  (-fsm->event [fsm name])
+  (-fsm-initialized? [fsm])
+  (-fsm-finalized? [fsm])
   (-init [data]))
 
 
@@ -455,65 +348,23 @@
   (-get-fsm [data]
     (get-fsm data))
 
-  (-get-fsm-name [data]
-    (get-fsm-name data))
+  (-fsm->state [fsm name]
+    (fsm->state fsm name))
 
-  (-get-fsm-description [data]
-    (get-fsm-description data))
+  (-fsm->initial-state [fsm]
+    (fsm->initial-state fsm))
 
-  (-get-fsm-enter [data]
-    (get-fsm-enter data))
+  (-fsm->finish-state [fsm]
+    (fsm->finish-state fsm))
 
-  (-get-fsm-leave [data]
-    (get-fsm-leave data))
+  (-fsm->event [fsm name]
+    (fsm->event fsm name))
 
-  (-get-fsm-error [data]
-    (get-fsm-error data))
+  (-fsm-initialized? [fsm]
+    (fsm-initialized? fsm))
 
-  (-get-fsm-states [data]
-    (get-fsm-states data))
-
-  (-get-fsm-states-names [data]
-    (get-fsm-states-names data))
-
-  (-get-fsm-initial-state [data]
-    (get-fsm-initial-state data))
-
-  (-get-fsm-previous-state [data]
-    (get-fsm-previous-state data))
-
-  (-get-fsm-current-state [data]
-    (get-fsm-current-state data))
-
-  (-get-fsm-finish-state [data]
-    (get-fsm-finish-state data))
-
-  (-get-fsm-state [data name]
-    (get-fsm-state data name))
-
-  (-get-fsm-state-enter [data name]
-    (get-fsm-state-enter data name))
-
-  (-get-fsm-state-leave [data name]
-    (get-fsm-state-leave data name))
-
-  (-get-fsm-state-error [data name]
-    (get-fsm-state-error data name))
-
-  (-get-fsm-events [data]
-    (get-fsm-events data))
-
-  (-get-fsm-events-names [data]
-    (get-fsm-events-names data))
-
-  (-get-fsm-event [data name]
-    (get-fsm-event data name))
-
-  (-init? [data]
-    (init? data))
-
-  (-finish? [data]
-    (finish? data))
+  (-fsm-finalized? [fsm]
+    (fsm-finalized? fsm))
 
   (-init [data]
     (init data)))

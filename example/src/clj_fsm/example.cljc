@@ -42,45 +42,45 @@
         :document/author "John Doe"})
 
 
-(def f {:fsm/name   :document/fsm
-        :fsm/desc   "Simple document FSM"
-        :fsm/enter  [on-enter]
-        :fsm/leave  [on-leave]
-        :fsm/error  [on-error]
-        :fsm/states {:document/unverified {:state/description "Unverified"
-                                           :state/initial?    true
-                                           :state/enter       [on-initial-state-enter]
-                                           :state/leave       [on-state-leave]
-                                           :state/error       [on-state-error]}
-                     :document/verified   {:state/description "Verified"
-                                           :state/enter       [on-state-enter]
-                                           :state/leave       [on-state-leave]
-                                           :state/error       [on-state-error]}
-                     :document/published  {:state/description "Published"
-                                           :state/enter       [on-state-enter]
-                                           :state/leave       [on-state-leave]
-                                           :state/error       [on-state-error]}
-                     :document/archived   {:state/description "Archived"
-                                           :state/enter       [on-state-enter]
-                                           :state/leave       [on-state-leave]
-                                           :state/error       [on-state-error]
-                                           :state/finish?     true}
-                     :document/rejected   {:state/description "Rejected"
-                                           :state/enter       [on-state-enter]
-                                           :state/leave       [on-state-leave]
-                                           :state/error       [on-state-error]}}
-        :fsm/events {:document/verify    {:transition/from [:document/unverified]
-                                          :transition/to   [:document/verified]}
-                     :document/reject    {:transition/from [:document/unverified]
-                                          :transition/to   [:document/rejected]}
-                     :document/reverify  {:transition/from [:document/verified]
-                                          :transition/to   [:document/unverified]}
-                     :document/publish   {:transition/from [:document/verified]
-                                          :transition/to   [:document/published]}
-                     :document/unpublish {:transition/from [:document/published]
-                                          :transition/to   [:document/verified]}
-                     :document/archive   {:transition/from [:document/published :document/verified :document/unverified]
-                                          :transition/to   [:document/archived]}}})
+(def f {:fsm/name        :document/fsm
+        :fsm/description "Simple document FSM"
+        :fsm/enter       [on-enter]
+        :fsm/leave       [on-leave]
+        :fsm/error       [on-error]
+        :fsm/states      {:document/unverified {:state/description "Unverified"
+                                                :state/initial?    true
+                                                :state/enter       [on-initial-state-enter]
+                                                :state/leave       [on-state-leave]
+                                                :state/error       [on-state-error]}
+                          :document/verified   {:state/description "Verified"
+                                                :state/enter       [on-state-enter]
+                                                :state/leave       [on-state-leave]
+                                                :state/error       [on-state-error]}
+                          :document/published  {:state/description "Published"
+                                                :state/enter       [on-state-enter]
+                                                :state/leave       [on-state-leave]
+                                                :state/error       [on-state-error]}
+                          :document/archived   {:state/description "Archived"
+                                                :state/enter       [on-state-enter]
+                                                :state/leave       [on-state-leave]
+                                                :state/error       [on-state-error]
+                                                :state/finish?     true}
+                          :document/rejected   {:state/description "Rejected"
+                                                :state/enter       [on-state-enter]
+                                                :state/leave       [on-state-leave]
+                                                :state/error       [on-state-error]}}
+        :fsm/events      {:document/verify    {:transition/from [:document/unverified]
+                                               :transition/to   [:document/verified]}
+                          :document/reject    {:transition/from [:document/unverified]
+                                               :transition/to   [:document/rejected]}
+                          :document/reverify  {:transition/from [:document/verified]
+                                               :transition/to   [:document/unverified]}
+                          :document/publish   {:transition/from [:document/verified]
+                                               :transition/to   [:document/published]}
+                          :document/unpublish {:transition/from [:document/published]
+                                               :transition/to   [:document/verified]}
+                          :document/archive   {:transition/from [:document/published :document/verified :document/unverified]
+                                               :transition/to   [:document/archived]}}})
 
 
 (comment
@@ -94,9 +94,9 @@
   (identity d1)
   ;; => #:document{:name " sImplE nAme    ", :author "John Doe"}
 
-  (fsm/get-fsm-previous-state d1)
+  (-> d1 fsm/get-fsm :fsm/previous)
   ;; => nil
-  (fsm/get-fsm-current-state d1)
+  (-> d1 fsm/get-fsm :fsm/current)
   ;; => nil
 
 
@@ -112,11 +112,10 @@
   ;; => #:document{:name "Simple name", :author "John Doe"}
 
 
-  (fsm/get-fsm-previous-state d2)
+  (-> d2 fsm/get-fsm :fsm/previous)
   ;; => nil
-  (fsm/get-fsm-current-state d2)
+  (-> d2 fsm/get-fsm :fsm/current)
   ;; => :document/unverified
-
 
 
   ;;
@@ -127,11 +126,10 @@
   ;; :on-state-leave :document/unverified
   ;; :on-state-enter :document/verified
 
-  (fsm/get-fsm-previous-state d3)
+  (-> d3 fsm/get-fsm :fsm/previous)
   ;; => :document/unverified
-  (fsm/get-fsm-current-state d3)
+  (-> d3 fsm/get-fsm :fsm/current)
   ;; => :document/verified
-
 
 
   ;;
@@ -142,13 +140,13 @@
   ;; :on-state-leave :document/verified
   ;; :on-state-enter :document/published
 
-  (fsm/get-fsm-previous-state d4)
+  (-> d4 fsm/get-fsm :fsm/previous)
   ;; => :document/verified
-  (fsm/get-fsm-current-state d4)
+  (-> d4 fsm/get-fsm :fsm/current)
   ;; => :document/published
 
 
-  (fsm/get-fsm-finish-state d4)
+  (-> d4 fsm/get-fsm fsm/fsm->finish-state)
   ;; => :document/archived
 
 
@@ -161,28 +159,26 @@
   ;; :on-state-enter :document/archived
   ;; :on-leave :document/archived
 
-  (fsm/get-fsm-previous-state d5)
+  (-> d5 fsm/get-fsm :fsm/previous)
   ;; => :document/published
-  (fsm/get-fsm-current-state d5)
+  (-> d5 fsm/get-fsm :fsm/current)
   ;; => :document/archived
-
 
 
   (def d6 (fsm/finish d5))
   ;; => no any changes
 
-  (fsm/get-fsm-previous-state d6)
+  (-> d6 fsm/get-fsm :fsm/previous)
   ;; => :document/published
-  (fsm/get-fsm-current-state d6)
+  (-> d6 fsm/get-fsm :fsm/current)
   ;; => :document/archived
-
 
 
   (def d7 (fsm/init d6))
   ;; => no any changes
 
-  (fsm/get-fsm-previous-state d7)
+  (-> d7 fsm/get-fsm :fsm/previous)
   ;; => :document/published
-  (fsm/get-fsm-current-state d7)
+  (-> d7 fsm/get-fsm :fsm/current)
   ;; => :document/archived
   )
