@@ -22,6 +22,14 @@ clean: ## Clean
 	@echo -e "\n"
 
 
+lint: ## Run linter
+	@echo "=================================================================="
+	@echo "Run linter..."
+	@echo "=================================================================="
+	clj-kondo --lint src:test
+	@echo -e "\n"
+
+
 test-clj: ## Run Clojure tests
 	@echo "=================================================================="
 	@echo "Run Clojure tests..."

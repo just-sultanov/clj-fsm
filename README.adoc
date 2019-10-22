@@ -74,6 +74,7 @@ $ make help
 help                           Show help
 repl                           Run nREPL
 clean                          Clean
+lint                           Run linter
 test-clj                       Run Clojure tests
 test-cljs                      Run ClojureScript tests
 test                           Run all tests
