@@ -32,10 +32,27 @@
   (println :on-state-error name :error error)
   data)
 
-(defn on-initial-state-enter [data name]
-  (println :on-initial-state-enter name)
-  (update data :document/name (comp str/capitalize str/trim)))
+(defn on-unverified-state-enter [data name]
+  (println :on-unverified-state-enter name)
+  (update data :document/name (comp str/upper-case str/trim)))
 
+(defn on-verified-state-enter [data name]
+  (println :on-verified-state-enter name)
+  (update data :document/name (comp str/lower-case str/trim)))
+
+(defn upper? [data]
+  (println :guard :upper?)
+  (->> data
+       :document/name
+       (re-seq #"[a-z]+")
+       nil?))
+
+(defn lower? [data]
+  (println :guard :lower?)
+  (->> data
+       :document/name
+       (re-seq #"[A-Z]+")
+       nil?))
 
 
 (def d {:document/name   " sImplE nAme    "
@@ -49,11 +66,11 @@
         :fsm/error       [on-error]
         :fsm/states      {:document/unverified {:state/description "Unverified"
                                                 :state/initial?    true
-                                                :state/enter       [on-initial-state-enter]
+                                                :state/enter       [on-unverified-state-enter]
                                                 :state/leave       [on-state-leave]
                                                 :state/error       [on-state-error]}
                           :document/verified   {:state/description "Verified"
-                                                :state/enter       [on-state-enter]
+                                                :state/enter       [on-verified-state-enter]
                                                 :state/leave       [on-state-leave]
                                                 :state/error       [on-state-error]}
                           :document/published  {:state/description "Published"
@@ -69,18 +86,20 @@
                                                 :state/enter       [on-state-enter]
                                                 :state/leave       [on-state-leave]
                                                 :state/error       [on-state-error]}}
-        :fsm/events      {:document/verify    {:transition/from [:document/unverified]
-                                               :transition/to   [:document/verified]}
+        :fsm/events      {:document/verify    {:transition/from   [:document/unverified]
+                                               :transition/to     :document/verified
+                                               :transition/guards [not-empty some? upper?]}
                           :document/reject    {:transition/from [:document/unverified]
-                                               :transition/to   [:document/rejected]}
-                          :document/reverify  {:transition/from [:document/verified]
-                                               :transition/to   [:document/unverified]}
+                                               :transition/to   :document/rejected}
+                          :document/reverify  {:transition/from   [:document/verified]
+                                               :transition/to     :document/unverified
+                                               :transition/guards [not-empty some? lower?]}
                           :document/publish   {:transition/from [:document/verified]
-                                               :transition/to   [:document/published]}
+                                               :transition/to   :document/published}
                           :document/unpublish {:transition/from [:document/published]
-                                               :transition/to   [:document/verified]}
+                                               :transition/to   :document/verified}
                           :document/archive   {:transition/from [:document/published :document/verified :document/unverified]
-                                               :transition/to   [:document/archived]}}})
+                                               :transition/to   :document/archived}}})
 
 
 (comment
@@ -106,10 +125,10 @@
 
   (def d2 (fsm/init d1))
   ;; :on-enter :document/unverified
-  ;; :on-initial-state-enter :document/unverified
+  ;; :on-unverified-state-enter :document/unverified
 
   (identity d2)
-  ;; => #:document{:name "Simple name", :author "John Doe"}
+  ;; => #:document{:name "SIMPLE NAME", :author "John Doe"}
 
 
   (-> d2 fsm/get-fsm :fsm/previous)
@@ -119,12 +138,13 @@
 
 
   ;;
-  ;; apply :document/verified state
+  ;; dispatch :document/verify event
   ;;
 
-  (def d3 (fsm/apply-state d2 :document/verified))
+  (def d3 (fsm/dispatch d2 :document/verify))
   ;; :on-state-leave :document/unverified
-  ;; :on-state-enter :document/verified
+  ;; :guard :upper?
+  ;; :on-verified-state-enter :document/verified
 
   (-> d3 fsm/get-fsm :fsm/previous)
   ;; => :document/unverified
@@ -133,12 +153,13 @@
 
 
   ;;
-  ;; apply :document/published state
+  ;; dispatch :document/reverify event
   ;;
 
-  (def d4 (fsm/apply-state d3 :document/published))
+  (def d4 (fsm/dispatch d3 :document/reverify))
   ;; :on-state-leave :document/verified
-  ;; :on-state-enter :document/published
+  ;; :guard :lower?
+  ;; :on-unverified-state-enter :document/unverified
 
   (-> d4 fsm/get-fsm :fsm/previous)
   ;; => :document/verified
@@ -151,11 +172,11 @@
 
 
   ;;
-  ;; apply :document/archived (finish state) directly
+  ;; dispatch :document/archive event
   ;;
 
-  (def d5 (fsm/apply-state d4 :document/archived))
-  ;; :on-state-leave :document/published
+  (def d5 (fsm/dispatch d4 :document/archive))
+  ;; :on-state-leave :document/unverified
   ;; :on-state-enter :document/archived
   ;; :on-leave :document/archived
 
