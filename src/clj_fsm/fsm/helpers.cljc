@@ -2,10 +2,10 @@
   "Helper functions."
   #?(:clj (:refer-clojure :exclude [format]))
   (:require
-    [clojure.string :as str]
     #?@(:clj [[clojure.core :as c]
               [clojure.main :as m]])
-    #?@(:cljs [[goog.string :as gstr]
+    #?@(:cljs [[clojure.string :as str]
+               [goog.string :as gstr]
                [goog.string.format]])))
 
 (defn find-first
