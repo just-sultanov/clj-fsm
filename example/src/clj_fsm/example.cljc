@@ -42,45 +42,45 @@
         :document/author "John Doe"})
 
 
-(def f {::fsm/name   :document/fsm
-        ::fsm/desc   "Simple document FSM"
-        ::fsm/enter  [on-enter]
-        ::fsm/leave  [on-leave]
-        ::fsm/error  [on-error]
-        ::fsm/states {:document/unverified {::fsm.state/description "Unverified"
-                                            ::fsm.state/initial?    true
-                                            ::fsm.state/enter       [on-initial-state-enter]
-                                            ::fsm.state/leave       [on-state-leave]
-                                            ::fsm.state/error       [on-state-error]}
-                      :document/verified   {::fsm.state/description "Verified"
-                                            ::fsm.state/enter       [on-state-enter]
-                                            ::fsm.state/leave       [on-state-leave]
-                                            ::fsm.state/error       [on-state-error]}
-                      :document/published  {::fsm.state/description "Published"
-                                            ::fsm.state/enter       [on-state-enter]
-                                            ::fsm.state/leave       [on-state-leave]
-                                            ::fsm.state/error       [on-state-error]}
-                      :document/archived   {::fsm.state/description "Archived"
-                                            ::fsm.state/enter       [on-state-enter]
-                                            ::fsm.state/leave       [on-state-leave]
-                                            ::fsm.state/error       [on-state-error]
-                                            ::fsm.state/finish?     true}
-                      :document/rejected   {::fsm.state/description "Rejected"
-                                            ::fsm.state/enter       [on-state-enter]
-                                            ::fsm.state/leave       [on-state-leave]
-                                            ::fsm.state/error       [on-state-error]}}
-        ::fsm/events {:document/verify    {::fsm.event/transition-from [:document/unverified]
-                                           ::fsm.event/transition-to   [:document/verified]}
-                      :document/reject    {::fsm.event/transition-from [:document/unverified]
-                                           ::fsm.event/transition-to   [:document/rejected]}
-                      :document/reverify  {::fsm.event/transition-from [:document/verified]
-                                           ::fsm.event/transition-to   [:document/unverified]}
-                      :document/publish   {::fsm.event/transition-from [:document/verified]
-                                           ::fsm.event/transition-to   [:document/published]}
-                      :document/unpublish {::fsm.event/transition-from [:document/published]
-                                           ::fsm.event/transition-to   [:document/verified]}
-                      :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
-                                           ::fsm.event/transition-to   [:document/archived]}}})
+(def f {:fsm/name   :document/fsm
+        :fsm/desc   "Simple document FSM"
+        :fsm/enter  [on-enter]
+        :fsm/leave  [on-leave]
+        :fsm/error  [on-error]
+        :fsm/states {:document/unverified {::fsm.state/description "Unverified"
+                                           ::fsm.state/initial?    true
+                                           ::fsm.state/enter       [on-initial-state-enter]
+                                           ::fsm.state/leave       [on-state-leave]
+                                           ::fsm.state/error       [on-state-error]}
+                     :document/verified   {::fsm.state/description "Verified"
+                                           ::fsm.state/enter       [on-state-enter]
+                                           ::fsm.state/leave       [on-state-leave]
+                                           ::fsm.state/error       [on-state-error]}
+                     :document/published  {::fsm.state/description "Published"
+                                           ::fsm.state/enter       [on-state-enter]
+                                           ::fsm.state/leave       [on-state-leave]
+                                           ::fsm.state/error       [on-state-error]}
+                     :document/archived   {::fsm.state/description "Archived"
+                                           ::fsm.state/enter       [on-state-enter]
+                                           ::fsm.state/leave       [on-state-leave]
+                                           ::fsm.state/error       [on-state-error]
+                                           ::fsm.state/finish?     true}
+                     :document/rejected   {::fsm.state/description "Rejected"
+                                           ::fsm.state/enter       [on-state-enter]
+                                           ::fsm.state/leave       [on-state-leave]
+                                           ::fsm.state/error       [on-state-error]}}
+        :fsm/events {:document/verify    {::fsm.event/transition-from [:document/unverified]
+                                          ::fsm.event/transition-to   [:document/verified]}
+                     :document/reject    {::fsm.event/transition-from [:document/unverified]
+                                          ::fsm.event/transition-to   [:document/rejected]}
+                     :document/reverify  {::fsm.event/transition-from [:document/verified]
+                                          ::fsm.event/transition-to   [:document/unverified]}
+                     :document/publish   {::fsm.event/transition-from [:document/verified]
+                                          ::fsm.event/transition-to   [:document/published]}
+                     :document/unpublish {::fsm.event/transition-from [:document/published]
+                                          ::fsm.event/transition-to   [:document/verified]}
+                     :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
+                                          ::fsm.event/transition-to   [:document/archived]}}})
 
 
 (comment

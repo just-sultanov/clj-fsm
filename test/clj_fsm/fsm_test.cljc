@@ -57,7 +57,7 @@
 (deftest ^:unit get-fsm-name-test
   (testing "getting `fsm` name:"
     (let [fsm  (gen/generate (s/gen ::sut/fsm))
-          name (::sut/name fsm)]
+          name (:fsm/name fsm)]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -69,7 +69,7 @@
 (deftest ^:unit get-fsm-description-test
   (testing "getting `fsm` description:"
     (let [fsm  (gen/generate (s/gen ::sut/fsm))
-          desc (::sut/description fsm)]
+          desc (:fsm/description fsm)]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -81,7 +81,7 @@
 (deftest ^:unit get-fsm-states-test
   (testing "getting `fsm` states:"
     (let [fsm    (gen/generate (s/gen ::sut/fsm))
-          states (::sut/states fsm)]
+          states (:fsm/states fsm)]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -93,7 +93,7 @@
 (deftest ^:unit get-fsm-states-names-test
   (testing "getting `fsm` states names:"
     (let [fsm    (gen/generate (s/gen ::sut/fsm))
-          states (keys (::sut/states fsm))]
+          states (keys (:fsm/states fsm))]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -129,7 +129,7 @@
 (deftest ^:unit get-fsm-events-test
   (testing "getting `fsm` events:"
     (let [fsm    (gen/generate (s/gen ::sut/fsm))
-          events (::sut/events fsm)]
+          events (:fsm/events fsm)]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -141,7 +141,7 @@
 (deftest ^:unit get-fsm-events-names-test
   (testing "getting `fsm` events names:"
     (let [fsm    (gen/generate (s/gen ::sut/fsm))
-          events (keys (::sut/events fsm))]
+          events (keys (:fsm/events fsm))]
       (doseq [obj objects
               :let [o (sut/assign obj fsm)]]
         (testing (helpers/format "from `%s` metadata" (type obj))
@@ -167,25 +167,25 @@
   (testing "initializing `fsm`:"
     (let [d    {:document/name   " sImplE nAme    "
                 :document/author "John Doe"}
-          f    {::sut/name        :document/fsm
-                ::sut/description "Simple document FSM"
-                ::sut/states      {:document/unverified {::fsm.state/description "Unverified", ::fsm.state/initial? true}
-                                   :document/verified   {::fsm.state/description "Verified"}
-                                   :document/published  {::fsm.state/description "Published"}
-                                   :document/archived   {::fsm.state/description "Archived", ::fsm.state/finish? true}
-                                   :document/rejected   {::fsm.state/description "Rejected"}}
-                ::sut/events      {:document/verify    {::fsm.event/transition-from [:document/unverified]
-                                                        ::fsm.event/transition-to   [:document/verified]}
-                                   :document/reject    {::fsm.event/transition-from [:document/unverified]
-                                                        ::fsm.event/transition-to   [:document/rejected]}
-                                   :document/reverify  {::fsm.event/transition-from [:document/verified]
-                                                        ::fsm.event/transition-to   [:document/unverified]}
-                                   :document/publish   {::fsm.event/transition-from [:document/verified]
-                                                        ::fsm.event/transition-to   [:document/published]}
-                                   :document/unpublish {::fsm.event/transition-from [:document/published]
-                                                        ::fsm.event/transition-to   [:document/verified]}
-                                   :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
-                                                        ::fsm.event/transition-to   [:document/archived]}}}
+          f    {:fsm/name        :document/fsm
+                :fsm/description "Simple document FSM"
+                :fsm/states      {:document/unverified {::fsm.state/description "Unverified", ::fsm.state/initial? true}
+                                  :document/verified   {::fsm.state/description "Verified"}
+                                  :document/published  {::fsm.state/description "Published"}
+                                  :document/archived   {::fsm.state/description "Archived", ::fsm.state/finish? true}
+                                  :document/rejected   {::fsm.state/description "Rejected"}}
+                :fsm/events      {:document/verify    {::fsm.event/transition-from [:document/unverified]
+                                                       ::fsm.event/transition-to   [:document/verified]}
+                                  :document/reject    {::fsm.event/transition-from [:document/unverified]
+                                                       ::fsm.event/transition-to   [:document/rejected]}
+                                  :document/reverify  {::fsm.event/transition-from [:document/verified]
+                                                       ::fsm.event/transition-to   [:document/unverified]}
+                                  :document/publish   {::fsm.event/transition-from [:document/verified]
+                                                       ::fsm.event/transition-to   [:document/published]}
+                                  :document/unpublish {::fsm.event/transition-from [:document/published]
+                                                       ::fsm.event/transition-to   [:document/verified]}
+                                  :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
+                                                       ::fsm.event/transition-to   [:document/archived]}}}
           data (sut/assign d f)]
 
       (testing "should be returned a valid initial state name"

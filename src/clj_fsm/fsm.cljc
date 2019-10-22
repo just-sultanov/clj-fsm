@@ -7,14 +7,14 @@
     [clj-fsm.fsm.event :as fsm.event]))
 
 ;;
-;; FSM specifications
+;; Internal specifications
 ;;
 
 (s/def ::name qualified-keyword?)
 (s/def ::description string?)
 (s/def ::current ::fsm.state/name)
-(s/def ::states ::fsm.state/states)
 (s/def ::previous (s/nilable ::fsm.state/name))
+(s/def ::states ::fsm.state/states)
 
 (s/def ::enter ::fsm.state/enter)
 (s/def ::leave ::fsm.state/leave)
@@ -23,15 +23,32 @@
 (s/def ::event ::fsm.event/name)
 (s/def ::events ::fsm.event/events)
 
-;; aliases
+
+;; Aliases
+
+(s/def :fsm/name ::name)
+(s/def :fsm/description ::description)
+(s/def :fsm/current ::current)
+(s/def :fsm/previous ::previous)
+(s/def :fsm/states ::states)
+(s/def :fsm/enter ::enter)
+(s/def :fsm/leave ::leave)
+(s/def :fsm/error ::error)
+(s/def :fsm/event ::event)
+(s/def :fsm/events ::events)
+
+
+;;
+;; FSM specifications
+;;
 
 (s/def ::uninitialized
-  (s/keys :req [::name ::description ::states ::events]
-          :opt [::enter ::leave ::error]))
+  (s/keys :req [:fsm/name :fsm/description :fsm/states :fsm/events]
+          :opt [:fsm/enter :fsm/leave :fsm/error]))
 
 (s/def ::initialized
-  (s/keys :req [::name ::description ::current ::previous ::states ::events]
-          :opt [::enter ::leave ::error]))
+  (s/keys :req [:fsm/name :fsm/description :fsm/current :fsm/previous :fsm/states :fsm/events]
+          :opt [:fsm/enter :fsm/leave :fsm/error]))
 
 (s/def ::fsm
   (s/or ::uninitialized ::uninitialized
@@ -74,42 +91,42 @@
   "Returns `fsm` name."
   {:added "0.1.4"}
   [data]
-  (::name (get-fsm data)))
+  (:fsm/name (get-fsm data)))
 
 
 (defn get-fsm-description
   "Returns `fsm` description."
   {:added "0.1.4"}
   [data]
-  (::description (get-fsm data)))
+  (:fsm/description (get-fsm data)))
 
 
 (defn get-fsm-enter
   "Returns `fsm` enter function."
   {:added "0.1.9"}
   [data]
-  (::enter (get-fsm data)))
+  (:fsm/enter (get-fsm data)))
 
 
 (defn get-fsm-leave
   "Returns `fsm` leave function."
   {:added "0.1.9"}
   [data]
-  (::leave (get-fsm data)))
+  (:fsm/leave (get-fsm data)))
 
 
 (defn get-fsm-error
   "Returns `fsm` error function."
   {:added "0.1.9"}
   [data]
-  (::error (get-fsm data)))
+  (:fsm/error (get-fsm data)))
 
 
 (defn get-fsm-states
   "Returns `fsm` states."
   {:added "0.1.4"}
   [data]
-  (::states (get-fsm data)))
+  (:fsm/states (get-fsm data)))
 
 
 (defn get-fsm-states-names
@@ -123,14 +140,14 @@
   "Returns `fsm` current state name."
   {:added "0.1.14"}
   [data]
-  (::current (get-fsm data)))
+  (:fsm/current (get-fsm data)))
 
 
 (defn get-fsm-previous-state
   "Returns `fsm` previous state name."
   {:added "0.1.14"}
   [data]
-  (::previous (get-fsm data)))
+  (:fsm/previous (get-fsm data)))
 
 
 (defn get-fsm-initial-state
@@ -187,7 +204,7 @@
   "Returns `fsm` events."
   {:added "0.1.14"}
   [data]
-  (::events (get-fsm data)))
+  (:fsm/events (get-fsm data)))
 
 
 (defn get-fsm-events-names
@@ -334,7 +351,7 @@
           data'         (-> data
                             (apply-fsm-on-enter initial-state)
                             (apply-state-on-enter initial-state))
-          fsm'          (assoc fsm ::current initial-state)]
+          fsm'          (assoc fsm :fsm/current initial-state)]
       (assign data' fsm'))))
 
 
@@ -367,8 +384,8 @@
                              (apply-state-on-leave previous-state)
                              (apply-state-on-enter finish-state)
                              (apply-fsm-on-leave finish-state))
-          fsm'           (assoc fsm ::current finish-state
-                                    ::previous previous-state)]
+          fsm'           (assoc fsm :fsm/current finish-state
+                                    :fsm/previous previous-state)]
       (assign data' fsm'))))
 
 
@@ -397,8 +414,8 @@
                     (some? current) (apply-state-on-leave current)
                     :always (apply-state-on-enter next))
           fsm'    (assoc fsm
-                    ::current next
-                    ::previous current)]
+                    :fsm/current next
+                    :fsm/previous current)]
       (assign data' fsm'))))
 
 
