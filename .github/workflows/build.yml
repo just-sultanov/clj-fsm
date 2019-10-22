@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Run linter
-        run: make lint
+        run: clj-kondo --lint src:test
 
   build:
     needs: lint
