@@ -5,8 +5,8 @@
     [clojure.spec.alpha :as s]
     [clojure.test.check.generators :as gen]
     [clj-fsm.fsm :as fsm]
-    [clj-fsm.fsm.state :as fsm.state]
-    [clj-fsm.fsm.event :as fsm.event]))
+    [clj-fsm.fsm.state]
+    [clj-fsm.fsm.event]))
 
 (defn on-enter [data name]
   (println :on-enter name)
@@ -47,40 +47,40 @@
         :fsm/enter  [on-enter]
         :fsm/leave  [on-leave]
         :fsm/error  [on-error]
-        :fsm/states {:document/unverified {::fsm.state/description "Unverified"
-                                           ::fsm.state/initial?    true
-                                           ::fsm.state/enter       [on-initial-state-enter]
-                                           ::fsm.state/leave       [on-state-leave]
-                                           ::fsm.state/error       [on-state-error]}
-                     :document/verified   {::fsm.state/description "Verified"
-                                           ::fsm.state/enter       [on-state-enter]
-                                           ::fsm.state/leave       [on-state-leave]
-                                           ::fsm.state/error       [on-state-error]}
-                     :document/published  {::fsm.state/description "Published"
-                                           ::fsm.state/enter       [on-state-enter]
-                                           ::fsm.state/leave       [on-state-leave]
-                                           ::fsm.state/error       [on-state-error]}
-                     :document/archived   {::fsm.state/description "Archived"
-                                           ::fsm.state/enter       [on-state-enter]
-                                           ::fsm.state/leave       [on-state-leave]
-                                           ::fsm.state/error       [on-state-error]
-                                           ::fsm.state/finish?     true}
-                     :document/rejected   {::fsm.state/description "Rejected"
-                                           ::fsm.state/enter       [on-state-enter]
-                                           ::fsm.state/leave       [on-state-leave]
-                                           ::fsm.state/error       [on-state-error]}}
-        :fsm/events {:document/verify    {::fsm.event/transition-from [:document/unverified]
-                                          ::fsm.event/transition-to   [:document/verified]}
-                     :document/reject    {::fsm.event/transition-from [:document/unverified]
-                                          ::fsm.event/transition-to   [:document/rejected]}
-                     :document/reverify  {::fsm.event/transition-from [:document/verified]
-                                          ::fsm.event/transition-to   [:document/unverified]}
-                     :document/publish   {::fsm.event/transition-from [:document/verified]
-                                          ::fsm.event/transition-to   [:document/published]}
-                     :document/unpublish {::fsm.event/transition-from [:document/published]
-                                          ::fsm.event/transition-to   [:document/verified]}
-                     :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
-                                          ::fsm.event/transition-to   [:document/archived]}}})
+        :fsm/states {:document/unverified {:state/description "Unverified"
+                                           :state/initial?    true
+                                           :state/enter       [on-initial-state-enter]
+                                           :state/leave       [on-state-leave]
+                                           :state/error       [on-state-error]}
+                     :document/verified   {:state/description "Verified"
+                                           :state/enter       [on-state-enter]
+                                           :state/leave       [on-state-leave]
+                                           :state/error       [on-state-error]}
+                     :document/published  {:state/description "Published"
+                                           :state/enter       [on-state-enter]
+                                           :state/leave       [on-state-leave]
+                                           :state/error       [on-state-error]}
+                     :document/archived   {:state/description "Archived"
+                                           :state/enter       [on-state-enter]
+                                           :state/leave       [on-state-leave]
+                                           :state/error       [on-state-error]
+                                           :state/finish?     true}
+                     :document/rejected   {:state/description "Rejected"
+                                           :state/enter       [on-state-enter]
+                                           :state/leave       [on-state-leave]
+                                           :state/error       [on-state-error]}}
+        :fsm/events {:document/verify    {:transition/from [:document/unverified]
+                                          :transition/to   [:document/verified]}
+                     :document/reject    {:transition/from [:document/unverified]
+                                          :transition/to   [:document/rejected]}
+                     :document/reverify  {:transition/from [:document/verified]
+                                          :transition/to   [:document/unverified]}
+                     :document/publish   {:transition/from [:document/verified]
+                                          :transition/to   [:document/published]}
+                     :document/unpublish {:transition/from [:document/published]
+                                          :transition/to   [:document/verified]}
+                     :document/archive   {:transition/from [:document/published :document/verified :document/unverified]
+                                          :transition/to   [:document/archived]}}})
 
 
 (comment

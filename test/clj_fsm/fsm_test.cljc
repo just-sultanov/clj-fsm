@@ -5,8 +5,8 @@
     [clojure.spec.alpha :as s]
     [clojure.test.check.generators :as gen]
     [clj-fsm.fsm.helpers :as helpers]
-    [clj-fsm.fsm.state :as fsm.state]
-    [clj-fsm.fsm.event :as fsm.event]
+    [clj-fsm.fsm.state]
+    [clj-fsm.fsm.event]
     [clj-fsm.fsm :as sut]))
 
 (def objects
@@ -169,23 +169,23 @@
                 :document/author "John Doe"}
           f    {:fsm/name        :document/fsm
                 :fsm/description "Simple document FSM"
-                :fsm/states      {:document/unverified {::fsm.state/description "Unverified", ::fsm.state/initial? true}
-                                  :document/verified   {::fsm.state/description "Verified"}
-                                  :document/published  {::fsm.state/description "Published"}
-                                  :document/archived   {::fsm.state/description "Archived", ::fsm.state/finish? true}
-                                  :document/rejected   {::fsm.state/description "Rejected"}}
-                :fsm/events      {:document/verify    {::fsm.event/transition-from [:document/unverified]
-                                                       ::fsm.event/transition-to   [:document/verified]}
-                                  :document/reject    {::fsm.event/transition-from [:document/unverified]
-                                                       ::fsm.event/transition-to   [:document/rejected]}
-                                  :document/reverify  {::fsm.event/transition-from [:document/verified]
-                                                       ::fsm.event/transition-to   [:document/unverified]}
-                                  :document/publish   {::fsm.event/transition-from [:document/verified]
-                                                       ::fsm.event/transition-to   [:document/published]}
-                                  :document/unpublish {::fsm.event/transition-from [:document/published]
-                                                       ::fsm.event/transition-to   [:document/verified]}
-                                  :document/archive   {::fsm.event/transition-from [:document/published :document/verified :document/unverified]
-                                                       ::fsm.event/transition-to   [:document/archived]}}}
+                :fsm/states      {:document/unverified {:state/description "Unverified", :state/initial? true}
+                                  :document/verified   {:state/description "Verified"}
+                                  :document/published  {:state/description "Published"}
+                                  :document/archived   {:state/description "Archived", :state/finish? true}
+                                  :document/rejected   {:state/description "Rejected"}}
+                :fsm/events      {:document/verify    {:transition/from [:document/unverified]
+                                                       :transition/to   [:document/verified]}
+                                  :document/reject    {:transition/from [:document/unverified]
+                                                       :transition/to   [:document/rejected]}
+                                  :document/reverify  {:transition/from [:document/verified]
+                                                       :transition/to   [:document/unverified]}
+                                  :document/publish   {:transition/from [:document/verified]
+                                                       :transition/to   [:document/published]}
+                                  :document/unpublish {:transition/from [:document/published]
+                                                       :transition/to   [:document/verified]}
+                                  :document/archive   {:transition/from [:document/published :document/verified :document/unverified]
+                                                       :transition/to   [:document/archived]}}}
           data (sut/assign d f)]
 
       (testing "should be returned a valid initial state name"

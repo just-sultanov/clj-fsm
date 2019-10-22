@@ -2,57 +2,47 @@
   "FSM core."
   (:require
     [clojure.spec.alpha :as s]
+    [clojure.test.check.generators :as gen]
     [clj-fsm.fsm.helpers :as helpers]
-    [clj-fsm.fsm.state :as fsm.state]
-    [clj-fsm.fsm.event :as fsm.event]))
-
-;;
-;; Internal specifications
-;;
-
-(s/def ::name qualified-keyword?)
-(s/def ::description string?)
-(s/def ::current ::fsm.state/name)
-(s/def ::previous (s/nilable ::fsm.state/name))
-(s/def ::states ::fsm.state/states)
-
-(s/def ::enter ::fsm.state/enter)
-(s/def ::leave ::fsm.state/leave)
-(s/def ::error ::fsm.state/error)
-
-(s/def ::event ::fsm.event/name)
-(s/def ::events ::fsm.event/events)
-
-
-;; Aliases
-
-(s/def :fsm/name ::name)
-(s/def :fsm/description ::description)
-(s/def :fsm/current ::current)
-(s/def :fsm/previous ::previous)
-(s/def :fsm/states ::states)
-(s/def :fsm/enter ::enter)
-(s/def :fsm/leave ::leave)
-(s/def :fsm/error ::error)
-(s/def :fsm/event ::event)
-(s/def :fsm/events ::events)
-
+    [clj-fsm.fsm.state]
+    [clj-fsm.fsm.event]))
 
 ;;
 ;; FSM specifications
 ;;
 
-(s/def ::uninitialized
+(s/def :fsm/fn
+  (s/with-gen
+    ifn?
+    (constantly (gen/return (comp identity first)))))
+
+(s/def :fsm/fns
+  (s/coll-of :fsm/fn :kind vector? :min-count 1))
+
+
+(s/def :fsm/name qualified-keyword?)
+(s/def :fsm/description string?)
+(s/def :fsm/current :state/name)
+(s/def :fsm/previous (s/nilable :state/name))
+(s/def :fsm/states :states/map)
+(s/def :fsm/enter :fsm/fns)
+(s/def :fsm/leave :fsm/fns)
+(s/def :fsm/error :fsm/fns)
+(s/def :fsm/event :event/map)
+(s/def :fsm/events :events/map)
+
+
+(s/def :fsm/uninitialized
   (s/keys :req [:fsm/name :fsm/description :fsm/states :fsm/events]
           :opt [:fsm/enter :fsm/leave :fsm/error]))
 
-(s/def ::initialized
+(s/def :fsm/initialized
   (s/keys :req [:fsm/name :fsm/description :fsm/current :fsm/previous :fsm/states :fsm/events]
           :opt [:fsm/enter :fsm/leave :fsm/error]))
 
-(s/def ::fsm
-  (s/or ::uninitialized ::uninitialized
-        ::initialized ::initialized))
+(s/def :fsm/map
+  (s/or :fsm/uninitialized :fsm/uninitialized
+        :fsm/initialized :fsm/initialized))
 
 
 ;;
@@ -65,12 +55,12 @@
   "Assigns `fsm` to the given data metadata."
   {:added "0.1.4"}
   [data fsm]
-  (if (s/valid? ::fsm fsm)
+  (if (s/valid? :fsm/map fsm)
     (vary-meta data assoc meta-fsm-key fsm)
     (throw
-      (ex-info (helpers/format "The given `fsm` is not satisfied by the specification: `%s`" ::fsm)
+      (ex-info (helpers/format "The given `fsm` is not satisfied by the specification: `%s`" :fsm/map)
                {:fsm      fsm
-                :problems (s/explain-data ::fsm fsm)}))))
+                :problems (s/explain-data :fsm/map fsm)}))))
 
 
 (defn unassign
@@ -156,7 +146,7 @@
   [data]
   (some->> data
     get-fsm-states
-    (helpers/find-first #(some? (::fsm.state/initial? (second %))))
+    (helpers/find-first #(some? (:state/initial? (second %))))
     first))
 
 
@@ -166,7 +156,7 @@
   [data]
   (some->> data
     get-fsm-states
-    (helpers/find-first #(some? (::fsm.state/finish? (second %))))
+    (helpers/find-first #(some? (:state/finish? (second %))))
     first))
 
 
@@ -183,21 +173,21 @@
   "Returns `fsm` state enter function."
   {:added "0.1.10"}
   [data name]
-  (::fsm.state/enter (get-fsm-state data name)))
+  (:state/enter (get-fsm-state data name)))
 
 
 (defn get-fsm-state-leave
   "Returns `fsm` state leave function."
   {:added "0.1.10"}
   [data name]
-  (::fsm.state/leave (get-fsm-state data name)))
+  (:state/leave (get-fsm-state data name)))
 
 
 (defn get-fsm-state-error
   "Returns `fsm` state error function."
   {:added "0.1.10"}
   [data name]
-  (::fsm.state/error (get-fsm-state data name)))
+  (:state/error (get-fsm-state data name)))
 
 
 (defn get-fsm-events
