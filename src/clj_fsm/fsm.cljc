@@ -230,7 +230,8 @@
 ;;   - set fsm current state to initial
 
 (defn init
-  "Initializes `fsm`. If `fsm` has been initialized, then returns the given data without any changes."
+  "Initializes `fsm`.
+  If `fsm` has been initialized, then returns the given data without any changes."
   {:added "0.1.9"}
   [data]
   (let [fsm (get-fsm data)]
@@ -253,12 +254,110 @@
         (assign data' fsm')))))
 
 
+(defn get-failed-guards
+  "Returns a vector of the function names, which are failed on data validating."
+  {:added "0.1.18"}
+  [data guards]
+  (mapv (fn [f]
+          (when-not (f data)
+            (helpers/fn-name f)))
+        guards))
+
+
+(defn check-data-by-guards
+  "Checks data by the given guards."
+  {:added "0.1.18"}
+  [data guards]
+  (let [valid? (if (not-empty guards)
+                 (every? #(% data) guards)
+                 true)]
+    (if valid?
+      data
+      (throw
+        (ex-info (helpers/format "The given data is not valid by the specified guards")
+                 {:data   data
+                  :fsm    (get-fsm data)
+                  :errors (get-failed-guards data guards)})))))
+
+
 (defn finish
   "Finalizes `fsm` and apply the finish state.
   If `fsm` has been finalized, then returns the given data without any changes."
   {:added "0.1.14"}
-  [data]
-  (let [fsm (get-fsm data)]
+  ([data]
+   (finish data []))
+
+  ([data guards]
+   (let [fsm (get-fsm data)]
+     (cond
+       (nil? fsm)
+       (throw
+         (ex-info "Not exists assigned `fsm` in the given data"
+                  {:data data
+                   :meta (meta data)}))
+
+       (fsm-finalized? fsm)
+       data
+
+       (not (fsm-initialized? fsm))
+       (throw
+         (ex-info "Not initialized `fsm` in the given data"
+                  {:data data
+                   :meta (meta data)}))
+
+       :else
+       (let [previous-state (:fsm/current fsm)
+             finish-state   (fsm->finish-state fsm)
+             data'          (-> data
+                                (apply-state-on-leave previous-state)
+                                (check-data-by-guards guards)
+                                (apply-state-on-enter finish-state)
+                                (apply-fsm-on-leave finish-state))
+             fsm'           (assoc fsm :fsm/current finish-state
+                                       :fsm/previous previous-state)]
+         (assign data' fsm'))))))
+
+
+(defn apply-state
+  "Applies state by the given state name."
+  {:added "0.1.9"}
+  ([data next]
+   (apply-state data next []))
+
+  ([data next guards]
+   (let [fsm (get-fsm data)]
+     (cond
+       (nil? (fsm->state fsm next))
+       (throw
+         (ex-info (helpers/format "Not exists `fsm` state with the given name: `%s`" next)
+                  {:fsm  (fsm data)
+                   :name next}))
+
+       (= next (fsm->finish-state fsm))
+       (finish data guards)
+
+       :else
+       (let [current (:fsm/current fsm)
+             data'   (cond-> data
+                       (some? current) (apply-state-on-leave current)
+                       (not-empty guards) (check-data-by-guards guards)
+                       :always (apply-state-on-enter next))
+             fsm'    (assoc fsm
+                       :fsm/current next
+                       :fsm/previous current)]
+         (assign data' fsm'))))))
+
+
+(defn dispatch
+  "Invokes event by the given name."
+  {:added "0.1.18"}
+  [data name]
+  (let [fsm     (get-fsm data)
+        event   (fsm->event fsm name)
+        current (:fsm/current fsm)
+        from    (:transition/from event)
+        to      (:transition/to event)
+        guards  (helpers/to-coll (:transition/guards event))]
     (cond
       (nil? fsm)
       (throw
@@ -266,54 +365,31 @@
                  {:data data
                   :meta (meta data)}))
 
-      (fsm-finalized? fsm)
-      data
+      (nil? event)
+      (throw
+        (ex-info (helpers/format "Not exists `fsm` event with the given name: `%s`" name)
+                 {:fsm  (fsm data)
+                  :name name}))
 
       (not (fsm-initialized? fsm))
       (throw
-        (ex-info "Not initialized `fsm` in the given data"
-                 {:data data
-                  :meta (meta data)}))
+        (ex-info "Your `fsm` hasn't been initialized before"
+                 {:fsm fsm}))
 
-      :else
-      (let [previous-state (:fsm/current fsm)
-            finish-state   (fsm->finish-state fsm)
-            data'          (-> data
-                               (apply-state-on-leave previous-state)
-                               (apply-state-on-enter finish-state)
-                               (apply-fsm-on-leave finish-state))
-            fsm'           (assoc fsm :fsm/current finish-state
-                                      :fsm/previous previous-state)]
-        (assign data' fsm')))))
-
-
-(defn apply-state
-  "Apply state by the given state name."
-  {:added "0.1.9"}
-  [data next]
-  (let [fsm (get-fsm data)]
-    (cond
-      (nil? (fsm->state fsm next))
+      (fsm-finalized? fsm)
       (throw
-        (ex-info (helpers/format "Not exists `fsm` state with the given name: `%s`" next)
-                 {:fsm  (fsm data)
-                  :name next}))
+        (ex-info "Your `fsm` has been finalized before"
+                 {:fsm fsm}))
 
-      (= next (fsm->initial-state fsm))
-      (init data)
+      (nil? (some #{current} from))
+      (throw
+        (ex-info (helpers/format "Not allowed transition from: `%s` to: `%s`" current to)
+                 {:fsm     (fsm data)
+                  :current current
+                  :from    from
+                  :to      to}))
 
-      (= next (fsm->finish-state fsm))
-      (finish data)
-
-      :else
-      (let [current (:fsm/current fsm)
-            data'   (cond-> data
-                      (some? current) (apply-state-on-leave current)
-                      :always (apply-state-on-enter next))
-            fsm'    (assoc fsm
-                      :fsm/current next
-                      :fsm/previous current)]
-        (assign data' fsm')))))
+      :else (apply-state data to guards))))
 
 
 
@@ -333,7 +409,8 @@
   (-fsm->event [fsm name])
   (-fsm-initialized? [fsm])
   (-fsm-finalized? [fsm])
-  (-init [data]))
+  (-init [data])
+  (-dispatch [data name]))
 
 
 
@@ -367,4 +444,7 @@
     (fsm-finalized? fsm))
 
   (-init [data]
-    (init data)))
+    (init data))
+
+  (-dispatch [data name]
+    (dispatch data name)))

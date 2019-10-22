@@ -2,6 +2,7 @@
   (:require
     #?(:clj  [clojure.test :refer [deftest testing is]]
        :cljs [cljs.test :refer-macros [deftest testing is]])
+    [clojure.string :as str]
     [clojure.spec.alpha :as s]
     [clojure.test.check.generators :as gen]
     [clj-fsm.fsm.helpers :as helpers]
@@ -117,17 +118,17 @@
                                   :document/archived   {:state/description "Archived", :state/finish? true}
                                   :document/rejected   {:state/description "Rejected"}}
                 :fsm/events      {:document/verify    {:transition/from [:document/unverified]
-                                                       :transition/to   [:document/verified]}
+                                                       :transition/to   :document/verified}
                                   :document/reject    {:transition/from [:document/unverified]
-                                                       :transition/to   [:document/rejected]}
+                                                       :transition/to   :document/rejected}
                                   :document/reverify  {:transition/from [:document/verified]
-                                                       :transition/to   [:document/unverified]}
+                                                       :transition/to   :document/unverified}
                                   :document/publish   {:transition/from [:document/verified]
-                                                       :transition/to   [:document/published]}
+                                                       :transition/to   :document/published}
                                   :document/unpublish {:transition/from [:document/published]
-                                                       :transition/to   [:document/verified]}
+                                                       :transition/to   :document/verified}
                                   :document/archive   {:transition/from [:document/published :document/verified :document/unverified]
-                                                       :transition/to   [:document/archived]}}}
+                                                       :transition/to   :document/archived}}}
           data (sut/assign d f)]
 
       (testing "should be returned a valid initialized status"
@@ -179,3 +180,105 @@
         (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
                               #"Not exists `fsm` state with the given name"
                               (sut/apply-state data ::unknown)))))))
+
+
+
+(deftest ^:unit dispatch-test
+  (testing "dispatching `fsm`:"
+    (let [lower  (fn [data _]
+                   (update data :document/name (comp str/lower-case str/trim)))
+
+          upper  (fn [data _]
+                   (update data :document/name (comp str/upper-case str/trim)))
+
+          lower? (fn [data]
+                   (= "simple name" (:document/name data)))
+
+          upper? (fn [data]
+                   (= "SIMPLE NAME" (:document/name data)))
+
+          d      {:document/name   " sImplE nAme    "
+                  :document/author "John Doe"}
+
+          f      {:fsm/name        :document/fsm
+                  :fsm/description "Simple document FSM"
+                  :fsm/states      {:document/unverified {:state/description "Unverified"
+                                                          :state/initial?    true
+                                                          :state/enter       [lower]}
+                                    :document/verified   {:state/description "Verified"
+                                                          :state/enter       [upper]}
+                                    :document/published  {:state/description "Published"}
+                                    :document/archived   {:state/description "Archived"
+                                                          :state/finish?     true}
+                                    :document/rejected   {:state/description "Rejected"}}
+                  :fsm/events      {:document/verify    {:transition/from   [:document/unverified]
+                                                         :transition/to     :document/verified
+                                                         :transition/guards [lower?]}
+                                    :document/reject    {:transition/from [:document/unverified]
+                                                         :transition/to   :document/rejected}
+                                    :document/reverify  {:transition/from   [:document/verified]
+                                                         :transition/to     :document/unverified
+                                                         :transition/guards [upper?]}
+                                    :document/publish   {:transition/from [:document/verified]
+                                                         :transition/to   :document/published}
+                                    :document/unpublish {:transition/from [:document/published]
+                                                         :transition/to   :document/verified}
+                                    :document/archive   {:transition/from   [:document/published :document/verified :document/unverified]
+                                                         :transition/to     :document/archived
+                                                         :transition/guards [upper?]}}}
+          data   (sut/assign d f)]
+
+      (testing "should be returned a valid current state name"
+        (let [data1 (-> data sut/init)
+              data2 (sut/dispatch data1 :document/verify)]
+          (is (= :document/verified (-> data2
+                                        sut/get-fsm
+                                        :fsm/current)))
+          (is (= :document/unverified (-> data2
+                                          (sut/dispatch :document/reverify)
+                                          sut/get-fsm
+                                          :fsm/current)))))
+
+      (testing "should be thrown an error on dispatching event without `fsm`"
+        (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
+                              #"Not exists assigned `fsm` in the given data"
+                              (-> d (sut/dispatch :document/verify)))))
+
+      (testing "should be thrown an error on dispatching event with uninitialized `fsm`"
+        (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
+                              #"Your `fsm` hasn't been initialized before"
+                              (-> data (sut/dispatch :document/verify)))))
+
+      (testing "should be thrown an error on dispatching event with finalized `fsm`"
+        (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
+                              #"Your `fsm` has been finalized before"
+                              (-> data sut/init sut/finish (sut/dispatch :document/verify)))))
+
+      (testing "should be thrown an error on dispatching not allowed event"
+        (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
+                              #"Not allowed transition from"
+                              (-> data sut/init (sut/dispatch :document/publish)))))
+
+      (testing "should be thrown an error on dispatching not allowed event"
+        (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
+                              #"Not allowed transition from"
+                              (-> data sut/init (sut/dispatch :document/publish)))))
+
+      (testing "should be thrown an error on dispatching event with bad guards"
+        (is (thrown-with-msg? #?(:clj Exception :cljs js/Error)
+                              #"The given data is not valid by the specified guards"
+                              (-> data sut/init (sut/dispatch :document/archive))))))))
+
+
+
+(deftest ^:unit get-failed-guards-test
+  (testing "should be returned a correct vector of errors"
+    #?@(:clj
+        (do
+          (is (= ["clojure.core/not-empty"] (sut/get-failed-guards {} [not-empty])))
+          (is (= ["clojure.core/some?"] (sut/get-failed-guards nil [some?]))))
+
+        :cljs
+        (do
+          (is (= ["cljs.core/not-empty"] (sut/get-failed-guards {} [not-empty])))
+          (is (= ["cljs.core/some?"] (sut/get-failed-guards nil [some?])))))))
