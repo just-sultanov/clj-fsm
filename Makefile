@@ -1,4 +1,4 @@
-.PHONY: help
+.PHONY: help test
 .DEFAULT_GOAL := help
 
 SHELL = bash
