@@ -55,7 +55,6 @@ build: ## Build jar
 	@echo "=================================================================="
 	clojure -A:build
 	clojure -A:version --pom --scm-url ${SCM_URL}
-	mv target/clj-fsm*.jar target/clj-fsm.jar
 	@echo -e "\n"
 
 

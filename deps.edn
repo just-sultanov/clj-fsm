@@ -22,11 +22,8 @@
                        :main-opts   ["--main" "cljs-test-runner.main"
                                      "--out" "target/test-cljs"]}
 
-           :build     {:extra-deps {cambada {:mvn/version "1.0.7"}}
-                       :main-opts  ["--main" "cambada.jar"
-                                    "--app-group-id" "clj-fsm"
-                                    "--app-artifact-id" "clj-fsm"
-                                    "--aot" "none"]}
+           :build     {:extra-deps {seancorfield/depstar {:mvn/version "0.3.4"}}
+                       :main-opts  ["--main" "hf.depstar.jar" "target/clj-fsm.jar"]}
 
            :version   {:extra-deps {com.workframe/garamond {:mvn/version "0.4.0"}}
                        :main-opts  ["-m" "garamond.main"]}
